@@ -2,6 +2,15 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **⚠️ Amendment (2026-07-27, during implementation): data source changed to the US Census Bureau API.**
+> The originally-planned Data USA endpoint (`datausa.io/api/data`, Task 4) turned out to be **dead** (404s), and its tesseract replacement did not cleanly expose median income or poverty. The build pivoted to the **US Census ACS 5-year API** (the spec's own listed future adapter). Concrete deltas from the tasks below:
+> - `src/data/dataUsaClient.js` → **`src/data/censusClient.js`** (`createCensusClient({ key, year })`). Response is an array-of-arrays (header row + rows); FIPS comes from the `state` (+ `county`) geography columns; missing data is a negative "jam" value → `null`. Requires a free API key via `VITE_CENSUS_KEY` (gitignored `.env`).
+> - Factors carry **`variable`** (e.g. `B19013_001E`) and **`dataset`** (`acs/acs5` or `acs/acs5/profile`) instead of a Data USA `measure`. The set expanded to 6 clean factors: median income, population, median age, poverty rate, bachelor's-or-higher %, median home value.
+> - `client.fetchFactor({ variable, dataset, geoLevel })` (was `{ measure, geoLevel }`).
+> - The data controller **scopes `dataset.rows` to the on-screen feature ids** (the county endpoint returns all US counties; ranking/details must reflect only the zoomed state).
+> - The map legend renders the factor **label** and **formatted** min/max.
+> Everything else (store, join, geo, map, shell, panels, search, error banner, TDD structure) matches the tasks below. All 54 unit tests pass and every feature was verified in-browser against the live Census API.
+
 **Goal:** Build a client-side US demographic explorer: a D3 choropleth that recolors by a chosen Census-derived factor, drills from states into counties, and drives ranking/details/compare/search panels through a single shared store.
 
 **Architecture:** Vanilla JS + D3 v7, bundled by Vite, no backend. Modules communicate only through one pub/sub `store`. A data layer fetches from the Data USA API (behind a thin client interface), joins values onto `us-atlas` TopoJSON by FIPS, and writes a `dataset` into the store; the map and every panel re-read the store and re-render. Foundation modules are built sequentially; the four feature panels are built in parallel against a frozen store contract.
