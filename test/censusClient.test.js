@@ -81,4 +81,31 @@ describe('createCensusClient', () => {
       client.fetchFactor({ variable: 'B19013_001E', dataset: 'acs/acs5', geoLevel: 'nation' })
     ).rejects.toThrow(/Census request failed/)
   })
+
+  it('requests the given year and includes it in the cache key', async () => {
+    global.fetch = mockFetch(stateTable)
+    const client = createCensusClient({ key: 'k', year: 2023 })
+    await client.fetchFactor({ variable: 'B19013_001E', dataset: 'acs/acs5', geoLevel: 'nation', year: 2015 })
+    await client.fetchFactor({ variable: 'B19013_001E', dataset: 'acs/acs5', geoLevel: 'nation', year: 2020 })
+    expect(global.fetch.mock.calls[0][0]).toContain('/2015/acs/acs5?')
+    expect(global.fetch.mock.calls[1][0]).toContain('/2020/acs/acs5?')
+    expect(global.fetch).toHaveBeenCalledTimes(2) // different years are not shared cache entries
+  })
+
+  it('requests multiple variables and derives the value via compute', async () => {
+    const eduTable = [
+      ['NAME', 'B15003_001E', 'B15003_022E', 'B15003_023E', 'state'],
+      ['Alabama', '3000000', '600000', '150000', '01']
+    ]
+    global.fetch = mockFetch(eduTable)
+    const client = createCensusClient({ key: 'k' })
+    const rows = await client.fetchFactor({
+      variables: ['B15003_001E', 'B15003_022E', 'B15003_023E'],
+      dataset: 'acs/acs5',
+      geoLevel: 'nation',
+      compute: (v) => (v[0] ? ((v[1] + v[2]) / v[0]) * 100 : null)
+    })
+    expect(global.fetch.mock.calls[0][0]).toContain('get=NAME%2CB15003_001E%2CB15003_022E%2CB15003_023E')
+    expect(rows[0]).toEqual({ id: '01', name: 'Alabama', value: 25 })
+  })
 })

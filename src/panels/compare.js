@@ -27,9 +27,9 @@ export function createComparePanel({ client = createCensusClient() } = {}) {
   }
 
   const loadB = async (store) => {
-    const { variable, dataset } = FACTORS[factorB]
-    const geoLevel = store.getState().geoLevel
-    const rows = await client.fetchFactor({ variable, dataset, geoLevel })
+    const { variable, variables, compute, dataset } = FACTORS[factorB]
+    const { geoLevel, year } = store.getState()
+    const rows = await client.fetchFactor({ variable, variables, compute, dataset, geoLevel, year })
     bValuesById = Object.fromEntries(rows.map((r) => [r.id, r.value]))
     buildTable(store)
   }

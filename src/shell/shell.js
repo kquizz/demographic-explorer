@@ -3,6 +3,7 @@ export function createShell(el, store, { factorList, panels }) {
   el.innerHTML = `
     <header class="topbar">
       <span class="app-title">US Demographics Explorer</span>
+      <span id="year-slot"></span>
       <span id="search-slot"></span>
     </header>
     <div class="body-row">
@@ -69,5 +70,9 @@ export function createShell(el, store, { factorList, panels }) {
   syncPills(store.getState())
   if (panels.length) activate(panels[0])
 
-  return { mapSlot: el.querySelector('#map-slot'), searchSlot: el.querySelector('#search-slot') }
+  return {
+    mapSlot: el.querySelector('#map-slot'),
+    searchSlot: el.querySelector('#search-slot'),
+    yearSlot: el.querySelector('#year-slot')
+  }
 }

@@ -1,7 +1,12 @@
 .shell { font: 14px system-ui, sans-serif; color: #333; }
 .topbar { background: #2b3a55; color: #fff; padding: 8px 12px; display: flex; align-items: center; gap: 12px; }
 .topbar .app-title { font-weight: 600; }
-.topbar #search-slot { margin-left: auto; }
+.topbar #year-slot { margin-left: auto; }
+.topbar #search-slot { margin-left: 12px; }
+.year-slider { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #cdd6e6; }
+.year-slider .year-value { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums;
+  min-width: 34px; text-align: right; }
+.year-slider .year-input { accent-color: #7aa2e3; }
 .body-row { display: flex; height: calc(100vh - 40px); }
 .rail { background: #eef1f6; padding: 10px; width: 180px; transition: width .2s; overflow: hidden; }
 .rail.collapsed { width: 28px; padding: 10px 4px; }
