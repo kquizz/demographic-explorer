@@ -8,3 +8,6 @@ export const formatPercent = (v) =>
 
 export const formatNumber = (v) =>
   v == null ? DASH : Math.round(v).toLocaleString('en-US')
+
+export const formatDecimal = (v) =>
+  v == null ? DASH : v.toFixed(1)

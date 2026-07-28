@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatUsd, formatPercent, formatNumber } from '../src/lib/format.js'
+import { formatUsd, formatPercent, formatNumber, formatDecimal } from '../src/lib/format.js'
 
 describe('formatters', () => {
   it('formats USD with a dollar sign and thousands separators', () => {
@@ -10,6 +10,10 @@ describe('formatters', () => {
   })
   it('formats a plain number with separators', () => {
     expect(formatNumber(5024279)).toBe('5,024,279')
+  })
+  it('formats a decimal to one place', () => {
+    expect(formatDecimal(39.3)).toBe('39.3')
+    expect(formatDecimal(null)).toBe('—')
   })
   it('renders null as an em dash', () => {
     expect(formatUsd(null)).toBe('—')

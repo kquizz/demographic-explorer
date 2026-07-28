@@ -6,11 +6,12 @@ describe('FACTORS registry', () => {
     expect(FACTOR_LIST.length).toBeGreaterThanOrEqual(4)
     for (const f of FACTOR_LIST) expect(FACTORS[f.id]).toBe(f)
   })
-  it('gives every factor an id, label, measure, and format function', () => {
+  it('gives every factor an id, label, Census variable, dataset, and format function', () => {
     for (const f of FACTOR_LIST) {
       expect(typeof f.id).toBe('string')
       expect(typeof f.label).toBe('string')
-      expect(typeof f.measure).toBe('string')
+      expect(typeof f.variable).toBe('string')
+      expect(['acs5', 'acs5/profile']).toContain(f.dataset)
       expect(typeof f.format).toBe('function')
     }
   })
