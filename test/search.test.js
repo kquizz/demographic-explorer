@@ -35,7 +35,7 @@ describe('mountSearch', () => {
     expect(options).toEqual(['Alabama'])
   })
 
-  it('pins the selection and updates the store on click', () => {
+  it('zooms into a matched state on click', () => {
     const el = document.createElement('div')
     const store = createStore(state)
     mountSearch(el, store, geoStub)
@@ -43,6 +43,26 @@ describe('mountSearch', () => {
     input.value = 'alas'
     input.dispatchEvent(new Event('input', { bubbles: true }))
     el.querySelector('.search-option').dispatchEvent(new Event('click', { bubbles: true }))
-    expect(store.getState().pinnedId).toBe('02')
+    expect(store.getState().geoLevel).toBe('state')
+    expect(store.getState().selectedState).toBe('02')
+    expect(store.getState().pinnedId).toBe(null)
+  })
+
+  it('zooms to the parent state and pins a matched county on click', () => {
+    const el = document.createElement('div')
+    const countyState = {
+      ...state,
+      geoLevel: 'state',
+      selectedState: '01',
+      dataset: { ...state.dataset, rows: [{ id: '01001', name: 'Autauga County, Alabama', value: 68315 }] }
+    }
+    const store = createStore(countyState)
+    mountSearch(el, store, geoStub)
+    const input = el.querySelector('input.search-input')
+    input.value = 'autauga'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    el.querySelector('.search-option').dispatchEvent(new Event('click', { bubbles: true }))
+    expect(store.getState().selectedState).toBe('01')
+    expect(store.getState().pinnedId).toBe('01001')
   })
 })

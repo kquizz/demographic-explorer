@@ -10,13 +10,11 @@ export function mountSearch(el, store, geo) {
   const select = (row) => {
     const id = String(row.id)
     if (id.length <= 2) {
-      store.setState({ geoLevel: 'state', selectedState: id, pinnedId: id })
+      // A state hit zooms into that state; no specific county is pinned yet.
+      store.setState({ geoLevel: 'state', selectedState: id, pinnedId: null })
     } else {
-      store.setState({
-        geoLevel: 'state',
-        selectedState: id.slice(0, 2),
-        pinnedId: id
-      })
+      // A county hit zooms into its parent state and pins the county.
+      store.setState({ geoLevel: 'state', selectedState: id.slice(0, 2), pinnedId: id })
     }
     input.value = row.name
     options.innerHTML = ''
