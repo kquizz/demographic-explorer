@@ -1,0 +1,8 @@
+{
+  "data": [
+    { "ID Year": 2021, "Year": "2021", "ID State": "04000US01", "State": "Alabama", "Household Income": 54943 },
+    { "ID Year": 2021, "Year": "2021", "ID State": "04000US02", "State": "Alaska", "Household Income": 80287 },
+    { "ID Year": 2021, "Year": "2021", "ID State": "04000US04", "State": "Arizona", "Household Income": null }
+  ],
+  "source": [{ "measures": ["Household Income"] }]
+}
