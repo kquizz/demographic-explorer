@@ -1,0 +1,19 @@
+import { describe, it, expect } from 'vitest'
+import { formatUsd, formatPercent, formatNumber } from '../src/lib/format.js'
+
+describe('formatters', () => {
+  it('formats USD with a dollar sign and thousands separators', () => {
+    expect(formatUsd(54943)).toBe('$54,943')
+  })
+  it('formats a percent to one decimal', () => {
+    expect(formatPercent(12.3456)).toBe('12.3%')
+  })
+  it('formats a plain number with separators', () => {
+    expect(formatNumber(5024279)).toBe('5,024,279')
+  })
+  it('renders null as an em dash', () => {
+    expect(formatUsd(null)).toBe('—')
+    expect(formatPercent(null)).toBe('—')
+    expect(formatNumber(null)).toBe('—')
+  })
+})
