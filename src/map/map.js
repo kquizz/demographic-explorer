@@ -2,6 +2,7 @@ import { select } from 'd3-selection'
 import { geoAlbersUsa, geoPath } from 'd3-geo'
 import { scaleSequential } from 'd3-scale'
 import { interpolateBlues } from 'd3-scale-chromatic'
+import { FACTORS } from '../data/factors.js'
 
 const NO_DATA_FILL = '#e8e8ea'
 
@@ -65,17 +66,18 @@ export function createMap(el, geo, store) {
 
   const renderLegend = (state, scale) => {
     const [min, max] = state.dataset.extent
-    const factorLabel = state.dataset.factor || ''
+    const factor = FACTORS[state.dataset.factor]
+    const fmt = factor?.format ?? String
     legend.html('')
-    legend.append('div').attr('class', 'legend-title').text(factorLabel)
+    legend.append('div').attr('class', 'legend-title').text(factor?.label ?? '')
     const ramp = legend.append('div').attr('class', 'ramp')
     if (min != null) {
-      ramp.append('span').attr('class', 'lo').text(String(min))
+      ramp.append('span').attr('class', 'lo').text(fmt(min))
       ramp
         .append('span')
         .attr('class', 'bar')
         .style('background', `linear-gradient(90deg, ${scale(min)}, ${scale(max)})`)
-      ramp.append('span').attr('class', 'hi').text(String(max))
+      ramp.append('span').attr('class', 'hi').text(fmt(max))
     }
     const nd = legend.append('div').attr('class', 'no-data-row')
     nd.append('span').attr('class', 'no-data-swatch').style('background', NO_DATA_FILL)

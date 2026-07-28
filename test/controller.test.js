@@ -6,7 +6,7 @@ const geoStub = {
   featureIds: (geoLevel) => (geoLevel === 'nation' ? ['01', '02', '99'] : ['01001'])
 }
 const factorsStub = {
-  median_income: { id: 'median_income', variable: 'B19013_001E', dataset: 'acs5' }
+  median_income: { id: 'median_income', variable: 'B19013_001E', dataset: 'acs/acs5' }
 }
 
 const initial = {
@@ -30,12 +30,29 @@ describe('createDataController', () => {
 
     const ds = store.getState().dataset
     expect(client.fetchFactor).toHaveBeenCalledWith({
-      variable: 'B19013_001E', dataset: 'acs5', geoLevel: 'nation'
+      variable: 'B19013_001E', dataset: 'acs/acs5', geoLevel: 'nation'
     })
     expect(ds.values).toEqual({ '01': 59609, '02': 86370, '99': null })
     expect(ds.byId['01']).toEqual({ id: '01', name: 'Alabama', value: 59609 })
     expect(ds.extent).toEqual([59609, 86370])
     expect(ds.factor).toBe('median_income')
+  })
+
+  it('scopes rows to the on-screen features (county view drops other states)', async () => {
+    // geoStub returns ['01001'] at state level; the API returns counties nationwide.
+    const rows = [
+      { id: '01001', name: 'Autauga County, Alabama', value: 68315 },
+      { id: '48001', name: 'Anderson County, Texas', value: 51000 }
+    ]
+    const client = { fetchFactor: vi.fn(() => Promise.resolve(rows)) }
+    const store = createStore({ ...initial, geoLevel: 'state', selectedState: '01' })
+    createDataController(store, client, geoStub, factorsStub)
+    store.setState({ factor: 'median_income' })
+    await vi.waitFor(() => expect(store.getState().dataset.status).toBe('ready'))
+    const ds = store.getState().dataset
+    expect(ds.rows).toEqual([{ id: '01001', name: 'Autauga County, Alabama', value: 68315 }])
+    expect(ds.byId['48001']).toBeUndefined()
+    expect(ds.values).toEqual({ '01001': 68315 })
   })
 
   it('does not refetch when only hoveredId changes', async () => {

@@ -10,8 +10,12 @@ export function createDataController(store, client, geo, factors) {
       dataset: { ...store.getState().dataset, status: 'loading', error: null }
     })
     try {
-      const rows = await client.fetchFactor({ variable, dataset, geoLevel })
+      const allRows = await client.fetchFactor({ variable, dataset, geoLevel })
       const featureIds = geo.featureIds(geoLevel, selectedState)
+      // The county API returns every county nationwide; scope rows to the features
+      // actually on screen so ranking/details reflect the current view, not the nation.
+      const idSet = new Set(featureIds)
+      const rows = allRows.filter((r) => idSet.has(r.id))
       const values = join(featureIds, rows)
       const byId = Object.fromEntries(rows.map((r) => [r.id, r]))
       const [min, max] = extent(rows, (r) => r.value)

@@ -11,7 +11,7 @@ describe('FACTORS registry', () => {
       expect(typeof f.id).toBe('string')
       expect(typeof f.label).toBe('string')
       expect(typeof f.variable).toBe('string')
-      expect(['acs5', 'acs5/profile']).toContain(f.dataset)
+      expect(['acs/acs5', 'acs/acs5/profile']).toContain(f.dataset)
       expect(typeof f.format).toBe('function')
     }
   })

@@ -45,7 +45,7 @@ describe('createComparePanel', () => {
     expect(first).toContain('$54,943')     // factor A formatted
     expect(first).toContain('5,024,279')   // factor B formatted
     expect(client.fetchFactor).toHaveBeenCalledWith({
-      variable: 'B01003_001E', dataset: 'acs5', geoLevel: 'nation'
+      variable: 'B01003_001E', dataset: 'acs/acs5', geoLevel: 'nation'
     })
   })
 })
