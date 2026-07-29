@@ -48,4 +48,24 @@ describe('createComparePanel', () => {
       variable: 'B01003_001E', dataset: 'acs/acs5', geoLevel: 'nation'
     }))
   })
+
+  it('publishes the second factor to store.compare and clears it on unmount', async () => {
+    const el = document.createElement('div')
+    const store = createStore(state)
+    const bRows = [{ id: '01', name: 'Alabama', value: 5024279 }]
+    const client = { fetchFactor: vi.fn(() => Promise.resolve(bRows)) }
+    const panel = createComparePanel({ client })
+    panel.mount(el, store)
+
+    const pick = el.querySelector('.compare-pick')
+    pick.value = 'population'
+    pick.dispatchEvent(new Event('change', { bubbles: true }))
+
+    await vi.waitFor(() => expect(store.getState().compare).toBeTruthy())
+    expect(store.getState().compare.factor).toBe('population')
+    expect(store.getState().compare.valuesById['01']).toBe(5024279)
+
+    panel.unmount()
+    expect(store.getState().compare).toBe(null)
+  })
 })

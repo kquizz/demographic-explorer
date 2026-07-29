@@ -3,6 +3,7 @@ import { geoAlbersUsa, geoPath } from 'd3-geo'
 import { scaleSequential } from 'd3-scale'
 import { interpolateBlues } from 'd3-scale-chromatic'
 import { FACTORS } from '../data/factors.js'
+import { tercileThresholds, binOf, bivariateColor, BIVARIATE_PALETTE } from './bivariate.js'
 
 const NO_DATA_FILL = '#e8e8ea'
 
@@ -29,10 +30,35 @@ export function createMap(el, geo, store) {
   const colorFor = (value, scale) =>
     value == null ? NO_DATA_FILL : scale(value)
 
+  // Precompute { id -> { fill, biv } } for the on-screen features. In compare mode
+  // (state.compare set) each area is colored by the pair of A/B terciles; otherwise by
+  // the single-factor blues scale. `biv` is the "aBin bBin" tag, or null for no-data.
+  const buildPaint = (state, features) => {
+    const paint = {}
+    if (state.compare) {
+      const aValues = state.dataset.values
+      const bValues = state.compare.valuesById
+      const aThresh = tercileThresholds(features.map((f) => aValues[String(f.id)]))
+      const bThresh = tercileThresholds(features.map((f) => bValues[String(f.id)]))
+      for (const f of features) {
+        const aBin = binOf(aValues[String(f.id)], aThresh)
+        const bBin = binOf(bValues[String(f.id)], bThresh)
+        const color = bivariateColor(aBin, bBin)
+        paint[f.id] = { fill: color ?? NO_DATA_FILL, biv: color == null ? null : `${aBin}${bBin}` }
+      }
+      return paint
+    }
+    const [min, max] = state.dataset.extent
+    const scale = scaleSequential(interpolateBlues).domain(min == null ? [0, 1] : [min, max])
+    for (const f of features) {
+      paint[f.id] = { fill: colorFor(state.dataset.values[String(f.id)], scale), biv: null }
+    }
+    return paint
+  }
+
   const render = (state) => {
     const features = currentFeatures(state)
-    const { values, extent } = state.dataset
-    const scale = scaleSequential(interpolateBlues).domain(extent[0] == null ? [0, 1] : extent)
+    const paint = buildPaint(state, features)
 
     projection.fitSize([960, 600], { type: 'FeatureCollection', features })
 
@@ -56,19 +82,22 @@ export function createMap(el, geo, store) {
     entered
       .merge(sel)
       .attr('d', path)
-      .attr('fill', (f) => colorFor(values[String(f.id)], scale))
-      .classed('no-data', (f) => values[String(f.id)] == null)
+      .attr('fill', (f) => paint[f.id].fill)
+      .attr('data-biv', (f) => paint[f.id].biv)
+      .classed('no-data', (f) => paint[f.id].fill === NO_DATA_FILL)
       .classed('pinned', (f) => String(f.id) === state.pinnedId)
 
     back.style('display', state.geoLevel === 'state' ? 'block' : 'none')
-    renderLegend(state, scale)
+    if (state.compare) renderBivariateLegend(state)
+    else renderLegend(state)
   }
 
-  const renderLegend = (state, scale) => {
+  const renderLegend = (state) => {
     const [min, max] = state.dataset.extent
     const factor = FACTORS[state.dataset.factor]
     const fmt = factor?.format ?? String
-    legend.html('')
+    const scale = scaleSequential(interpolateBlues).domain(min == null ? [0, 1] : [min, max])
+    legend.attr('class', 'legend').html('')
     legend.append('div').attr('class', 'legend-title').text(factor?.label ?? '')
     const ramp = legend.append('div').attr('class', 'ramp')
     if (min != null) {
@@ -82,6 +111,21 @@ export function createMap(el, geo, store) {
     const nd = legend.append('div').attr('class', 'no-data-row')
     nd.append('span').attr('class', 'no-data-swatch').style('background', NO_DATA_FILL)
     nd.append('span').text('No data')
+  }
+
+  const renderBivariateLegend = (state) => {
+    const aLabel = FACTORS[state.dataset.factor]?.label ?? ''
+    const bLabel = FACTORS[state.compare.factor]?.label ?? ''
+    legend.attr('class', 'legend bivariate-legend').html('')
+    const grid = legend.append('div').attr('class', 'biv-grid')
+    // rows top→bottom are high→low A so the swatch reads like a chart (up = more A)
+    for (let a = 2; a >= 0; a--) {
+      for (let b = 0; b < 3; b++) {
+        grid.append('span').attr('class', 'biv-cell').style('background', BIVARIATE_PALETTE[a][b])
+      }
+    }
+    legend.append('div').attr('class', 'biv-axis biv-axis-a').text(`↑ ${aLabel}`)
+    legend.append('div').attr('class', 'biv-axis biv-axis-b').text(`${bLabel} →`)
   }
 
   const unsub = store.subscribe(render)

@@ -47,4 +47,33 @@ describe('createMap', () => {
     expect(el.querySelector('.legend')).toBeTruthy()
     expect(el.querySelector('.legend .no-data-swatch')).toBeTruthy()
   })
+
+  it('colors bivariately and shows a 3x3 legend when compare is active', () => {
+    const el = document.createElement('div')
+    const store = createStore({
+      ...baseState,
+      compare: { factor: 'population', valuesById: { '01': 1000, '02': 2000 } }
+    })
+    createMap(el, createGeo(topology), store)
+    // both features have data → a bivariate bin tag, not the no-data class
+    const f1 = el.querySelector('path.feature[data-id="01"]')
+    expect(f1.getAttribute('data-biv')).toMatch(/^[0-2][0-2]$/)
+    expect(el.querySelector('.bivariate-legend')).toBeTruthy()
+    expect(el.querySelectorAll('.bivariate-legend .biv-cell').length).toBe(9)
+    expect(el.querySelector('.biv-axis-a').textContent).toContain('Median income')
+    expect(el.querySelector('.biv-axis-b').textContent).toContain('Population')
+  })
+
+  it('reverts to the single-factor legend when compare clears', () => {
+    const el = document.createElement('div')
+    const store = createStore({
+      ...baseState,
+      compare: { factor: 'population', valuesById: { '01': 1000, '02': 2000 } }
+    })
+    createMap(el, createGeo(topology), store)
+    expect(el.querySelector('.bivariate-legend')).toBeTruthy()
+    store.setState({ compare: null })
+    expect(el.querySelector('.bivariate-legend')).toBeFalsy()
+    expect(el.querySelector('.legend .no-data-swatch')).toBeTruthy()
+  })
 })

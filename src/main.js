@@ -20,7 +20,7 @@ const LATEST_YEAR = YEARS[YEARS.length - 1]
 
 const store = createStore({
   factor: null, geoLevel: 'nation', selectedState: null, year: LATEST_YEAR,
-  hoveredId: null, pinnedId: null,
+  hoveredId: null, pinnedId: null, compare: null,
   dataset: { status: 'idle', factor: null, geoLevel: null, rows: [], byId: {},
     values: {}, extent: [null, null], error: null }
 })

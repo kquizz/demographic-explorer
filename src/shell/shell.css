@@ -27,6 +27,11 @@
 .map .legend .no-data-swatch { display: inline-block; width: 10px; height: 10px; margin-right: 4px;
   border: 1px solid #cbd3e1; vertical-align: middle; }
 .map .back-btn { position: absolute; left: 12px; top: 12px; }
+.map .bivariate-legend { padding: 8px 10px; }
+.map .biv-grid { display: grid; grid-template-columns: repeat(3, 16px); grid-template-rows: repeat(3, 16px); gap: 1px; }
+.map .biv-cell { width: 16px; height: 16px; }
+.map .biv-axis { font-size: 10px; color: #555; margin-top: 3px; }
+.map .biv-axis-a { transform: none; }
 .feature { stroke: #fff; stroke-width: 0.5; cursor: pointer; }
 .feature.pinned { stroke: #222; stroke-width: 1.5; }
 
