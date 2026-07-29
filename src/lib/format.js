@@ -11,3 +11,6 @@ export const formatNumber = (v) =>
 
 export const formatDecimal = (v) =>
   v == null ? DASH : v.toFixed(1)
+
+export const formatGini = (v) =>
+  v == null ? DASH : v.toFixed(3)

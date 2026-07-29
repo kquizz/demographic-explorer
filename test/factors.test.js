@@ -18,10 +18,21 @@ describe('FACTORS registry', () => {
     }
   })
 
-  it('computes bachelor-or-higher as a percentage from the education counts', () => {
+  it('computes share-shaped factors as sum(parts)/total (education attainment)', () => {
     // total=1000, bachelor=100, master=50, professional=25, doctorate=25 => 20%
     expect(FACTORS.bachelors_plus.compute([1000, 100, 50, 25, 25])).toBe(20)
     expect(FACTORS.bachelors_plus.compute([0, 0, 0, 0, 0])).toBe(null)
+    // hs_plus sums all nine attainment buckets over the total
+    expect(FACTORS.hs_plus.compute([1000, 100, 100, 100, 100, 100, 100, 100, 100, 100])).toBe(90)
+  })
+
+  it('computes ratio-shaped factors as numerator/denominator (unemployment, race)', () => {
+    // unemployment: 500 unemployed / 10000 labor force => 5%
+    expect(FACTORS.unemployment_rate.compute([500, 10000])).toBe(5)
+    // homeownership: 700 owner-occupied / 1000 occupied => 70%
+    expect(FACTORS.homeownership_rate.compute([700, 1000])).toBe(70)
+    // guards against divide-by-zero
+    expect(FACTORS.pct_hispanic.compute([50, 0])).toBe(null)
   })
   it('includes median_income as the default factor', () => {
     expect(FACTORS.median_income).toBeTruthy()
