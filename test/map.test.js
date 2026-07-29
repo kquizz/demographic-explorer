@@ -76,4 +76,24 @@ describe('createMap', () => {
     expect(el.querySelector('.bivariate-legend')).toBeFalsy()
     expect(el.querySelector('.legend .no-data-swatch')).toBeTruthy()
   })
+
+  it('uses a diverging scale + legend for a diverging factor (vote margin)', () => {
+    const el = document.createElement('div')
+    const store = createStore({
+      ...baseState,
+      dataset: {
+        status: 'ready', factor: 'vote_margin', geoLevel: 'nation',
+        rows: [], byId: {},
+        values: { '01': -40, '02': 25 }, extent: [-40, 25], error: null
+      }
+    })
+    createMap(el, createGeo(topology), store)
+    expect(el.querySelector('.diverging-legend')).toBeTruthy()
+    const rep = el.querySelector('path.feature[data-id="01"]').getAttribute('fill')
+    const dem = el.querySelector('path.feature[data-id="02"]').getAttribute('fill')
+    // both are colored (not the no-data grey) and the two leans differ
+    expect(rep).not.toBe('#e8e8ea')
+    expect(dem).not.toBe('#e8e8ea')
+    expect(rep).not.toBe(dem)
+  })
 })

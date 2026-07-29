@@ -7,6 +7,10 @@
 .year-slider .year-value { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums;
   min-width: 34px; text-align: right; }
 .year-slider .year-input { accent-color: #7aa2e3; }
+.election-toggle { font-size: 12px; color: #cdd6e6; display: inline-flex; align-items: center; gap: 6px; }
+.election-year { background: #3a4a68; color: #cdd6e6; border: 1px solid #4a5a78; border-radius: 5px;
+  padding: 3px 9px; cursor: pointer; }
+.election-year.on { background: #7aa2e3; color: #16233b; font-weight: 600; border-color: #7aa2e3; }
 .body-row { display: flex; height: calc(100vh - 40px); }
 .rail { background: #eef1f6; padding: 10px; width: 180px; transition: width .2s; overflow: hidden; }
 .rail.collapsed { width: 28px; padding: 10px 4px; }

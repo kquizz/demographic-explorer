@@ -1,11 +1,22 @@
 import { select } from 'd3-selection'
 import { geoAlbersUsa, geoPath } from 'd3-geo'
-import { scaleSequential } from 'd3-scale'
-import { interpolateBlues } from 'd3-scale-chromatic'
+import { scaleSequential, scaleDiverging } from 'd3-scale'
+import { interpolateBlues, interpolateRdBu } from 'd3-scale-chromatic'
 import { FACTORS } from '../data/factors.js'
 import { tercileThresholds, binOf, bivariateColor, BIVARIATE_PALETTE } from './bivariate.js'
 
 const NO_DATA_FILL = '#e8e8ea'
+
+// The single-factor color scale: diverging red<->blue (centered at 0) for margin-style
+// factors, otherwise a sequential blues ramp over the value extent.
+const singleFactorScale = (state) => {
+  const [min, max] = state.dataset.extent
+  if (FACTORS[state.dataset.factor]?.scale === 'diverging') {
+    const m = Math.max(Math.abs(min ?? 0), Math.abs(max ?? 0)) || 1
+    return scaleDiverging(interpolateRdBu).domain([-m, 0, m])
+  }
+  return scaleSequential(interpolateBlues).domain(min == null ? [0, 1] : [min, max])
+}
 
 export function createMap(el, geo, store) {
   const root = select(el).classed('map', true)
@@ -48,8 +59,7 @@ export function createMap(el, geo, store) {
       }
       return paint
     }
-    const [min, max] = state.dataset.extent
-    const scale = scaleSequential(interpolateBlues).domain(min == null ? [0, 1] : [min, max])
+    const scale = singleFactorScale(state)
     for (const f of features) {
       paint[f.id] = { fill: colorFor(state.dataset.values[String(f.id)], scale), biv: null }
     }
@@ -96,16 +106,17 @@ export function createMap(el, geo, store) {
     const [min, max] = state.dataset.extent
     const factor = FACTORS[state.dataset.factor]
     const fmt = factor?.format ?? String
-    const scale = scaleSequential(interpolateBlues).domain(min == null ? [0, 1] : [min, max])
-    legend.attr('class', 'legend').html('')
+    const diverging = factor?.scale === 'diverging'
+    const scale = singleFactorScale(state)
+    legend.attr('class', diverging ? 'legend diverging-legend' : 'legend').html('')
     legend.append('div').attr('class', 'legend-title').text(factor?.label ?? '')
     const ramp = legend.append('div').attr('class', 'ramp')
     if (min != null) {
       ramp.append('span').attr('class', 'lo').text(fmt(min))
-      ramp
-        .append('span')
-        .attr('class', 'bar')
-        .style('background', `linear-gradient(90deg, ${scale(min)}, ${scale(max)})`)
+      const gradient = diverging
+        ? `linear-gradient(90deg, ${scale(min)}, ${scale(0)}, ${scale(max)})`
+        : `linear-gradient(90deg, ${scale(min)}, ${scale(max)})`
+      ramp.append('span').attr('class', 'bar').style('background', gradient)
       ramp.append('span').attr('class', 'hi').text(fmt(max))
     }
     const nd = legend.append('div').attr('class', 'no-data-row')

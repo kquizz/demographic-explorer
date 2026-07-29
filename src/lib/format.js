@@ -14,3 +14,7 @@ export const formatDecimal = (v) =>
 
 export const formatGini = (v) =>
   v == null ? DASH : v.toFixed(3)
+
+// Signed election margin in points: positive = Democratic lean, negative = Republican.
+export const formatMargin = (v) =>
+  v == null ? DASH : v === 0 ? 'Even' : v > 0 ? `D+${v.toFixed(1)}` : `R+${(-v).toFixed(1)}`

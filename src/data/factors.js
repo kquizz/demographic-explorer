@@ -1,4 +1,4 @@
-import { formatUsd, formatPercent, formatNumber, formatDecimal, formatGini } from '../lib/format.js'
+import { formatUsd, formatPercent, formatNumber, formatDecimal, formatGini, formatMargin } from '../lib/format.js'
 
 // Each factor maps to US Census ACS 5-year data, verified against the live API across
 // the full slider range (2012-2023). `dataset` is the API path segment after the year:
@@ -76,7 +76,11 @@ export const FACTOR_LIST = [
   {
     id: 'pct_foreign_born', label: '% Foreign-born', dataset: 'acs/acs5', format: formatPercent,
     variables: ['B05002_013E', 'B05002_001E'], compute: ratioPct
-  }
+  },
+
+  // Elections — bundled dataset (not Census). Diverging red<->blue by Dem-Rep margin;
+  // uses the election-year picker (2020/2024) instead of the ACS year slider.
+  { id: 'vote_margin', label: 'Presidential margin', source: 'elections', scale: 'diverging', format: formatMargin }
 ]
 
 export const FACTORS = Object.fromEntries(FACTOR_LIST.map((f) => [f.id, f]))

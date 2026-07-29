@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatUsd, formatPercent, formatNumber, formatDecimal, formatGini } from '../src/lib/format.js'
+import { formatUsd, formatPercent, formatNumber, formatDecimal, formatGini, formatMargin } from '../src/lib/format.js'
 
 describe('formatters', () => {
   it('formats USD with a dollar sign and thousands separators', () => {
@@ -18,6 +18,12 @@ describe('formatters', () => {
   it('formats a gini index to three places', () => {
     expect(formatGini(0.478)).toBe('0.478')
     expect(formatGini(null)).toBe('—')
+  })
+  it('formats an election margin as D+/R+', () => {
+    expect(formatMargin(20.1)).toBe('D+20.1')
+    expect(formatMargin(-13.7)).toBe('R+13.7')
+    expect(formatMargin(0)).toBe('Even')
+    expect(formatMargin(null)).toBe('—')
   })
   it('renders null as an em dash', () => {
     expect(formatUsd(null)).toBe('—')

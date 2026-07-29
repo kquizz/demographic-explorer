@@ -6,16 +6,27 @@ describe('FACTORS registry', () => {
     expect(FACTOR_LIST.length).toBeGreaterThanOrEqual(4)
     for (const f of FACTOR_LIST) expect(FACTORS[f.id]).toBe(f)
   })
-  it('gives every factor an id, label, dataset, format, and a variable or computed variables', () => {
+  it('gives every factor an id, label, and format function', () => {
     for (const f of FACTOR_LIST) {
       expect(typeof f.id).toBe('string')
       expect(typeof f.label).toBe('string')
-      expect(['acs/acs5', 'acs/acs5/profile']).toContain(f.dataset)
       expect(typeof f.format).toBe('function')
+    }
+  })
+
+  it('gives every Census factor a dataset and a variable or computed variables', () => {
+    for (const f of FACTOR_LIST.filter((f) => f.source !== 'elections')) {
+      expect(['acs/acs5', 'acs/acs5/profile']).toContain(f.dataset)
       const single = typeof f.variable === 'string'
       const computed = Array.isArray(f.variables) && typeof f.compute === 'function'
       expect(single || computed).toBe(true)
     }
+  })
+
+  it('marks the elections factor with its own source and diverging scale', () => {
+    expect(FACTORS.vote_margin.source).toBe('elections')
+    expect(FACTORS.vote_margin.scale).toBe('diverging')
+    expect(FACTORS.vote_margin.format(-13.7)).toBe('R+13.7')
   })
 
   it('computes share-shaped factors as sum(parts)/total (education attainment)', () => {

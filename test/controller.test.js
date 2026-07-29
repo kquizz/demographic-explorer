@@ -16,6 +16,23 @@ const initial = {
 }
 
 describe('createDataController', () => {
+  it('routes elections factors to the elections source with the election year', async () => {
+    const factors = { vote_margin: { id: 'vote_margin', source: 'elections' } }
+    const census = { fetchFactor: vi.fn() }
+    const elections = { fetchFactor: vi.fn(() => Promise.resolve([{ id: '01', name: 'Alabama', value: -50 }])) }
+    const store = createStore({ ...initial, electionYear: 2024 })
+    createDataController(store, census, geoStub, factors, elections)
+
+    store.setState({ factor: 'vote_margin' })
+    await vi.waitFor(() => expect(store.getState().dataset.status).toBe('ready'))
+
+    expect(census.fetchFactor).not.toHaveBeenCalled()
+    expect(elections.fetchFactor).toHaveBeenCalledWith(
+      expect.objectContaining({ geoLevel: 'nation', electionYear: 2024 })
+    )
+    expect(store.getState().dataset.byId['01'].value).toBe(-50)
+  })
+
   it('loads, joins, and writes a ready dataset when factor is set', async () => {
     const rows = [
       { id: '01', name: 'Alabama', value: 59609 },
