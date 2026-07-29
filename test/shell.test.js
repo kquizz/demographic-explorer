@@ -23,6 +23,15 @@ describe('createShell', () => {
     expect(el.querySelectorAll('.factor-pill').length).toBe(2)
   })
 
+  it('renders a footer citing the Census and election data sources', () => {
+    const el = document.createElement('div')
+    createShell(el, createStore(initial), { factorList, panels: [makePanel('ranking')] })
+    const footer = el.querySelector('.appfooter')
+    expect(footer).toBeTruthy()
+    expect(footer.textContent).toMatch(/census/i)
+    expect(footer.querySelectorAll('a').length).toBeGreaterThanOrEqual(2)
+  })
+
   it('marks the active factor pill and sets factor on click', () => {
     const el = document.createElement('div')
     const store = createStore(initial)

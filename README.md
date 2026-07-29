@@ -1,0 +1,150 @@
+# US Demographics Explorer
+
+An interactive US choropleth map for exploring demographic and electoral data. Pick a
+factor and the map recolors; zoom from states into counties; slide through years to watch
+trends; rank areas; compare two factors on a bivariate map; and view presidential vote
+margins. Everything runs client-side against public data sources.
+
+**Live demo:** https://demo.kquizz.com
+
+## Features
+
+- **18 factors** across population, economics, education, housing, race/ethnicity, and
+  elections — the map recolors instantly when you switch.
+- **Drill-down:** click a state to zoom into its counties; a Back control returns to the
+  national view. Ranking and details rescope to whatever's on screen.
+- **Time-trend slider (2012–2023):** move through American Community Survey vintages and
+  the map, ranking, legend, and details all update to the selected year.
+- **Compare mode:** pick a second factor and the map switches to a 3×3 **bivariate**
+  color scheme (factor A × factor B terciles) with a 2D legend.
+- **Elections layer:** a **diverging red↔blue** presidential-margin map with a 2020/2024
+  toggle (swaps in for the year slider).
+- **Analysis panels:** sortable ranking leaderboard, hover/pin details, and a
+  side-by-side compare table.
+- **Search** to jump to a state or county by name.
+- Missing data is rendered as a distinct "no data" color, never coerced to zero.
+
+## Data sources
+
+The tool presents neutral, well-sourced data — the defense against any single narrative is
+transparency and easy multi-factor comparison, not editorializing.
+
+- **U.S. Census Bureau — American Community Survey (ACS) 5-year estimates**, fetched live
+  from the [Census Data API](https://www.census.gov/data/developers/data-sets.html).
+  Detail tables (`acs/acs5`) and Data Profile tables (`acs/acs5/profile`).
+- **County presidential results (2020, 2024)** — a bundled static dataset compiled from
+  official/AP returns via
+  [tonmcg/US_County_Level_Election_Results_08-24](https://github.com/tonmcg/US_County_Level_Election_Results_08-24).
+- **Geometry:** [us-atlas](https://github.com/topojson/us-atlas) TopoJSON (states + counties).
+
+**Caveats:** ACS values are survey estimates and carry margins of error — explore trends,
+don't over-read a single number. Alaska reports presidential results by district rather
+than county, so its county-level margins are approximate (the state-level figure is solid).
+
+## Tech stack
+
+Vanilla JavaScript (ES modules) · [D3 v7](https://d3js.org/) · TopoJSON · bundled with
+[Vite](https://vitejs.dev/) · tested with [Vitest](https://vitest.dev/) + jsdom. No
+framework, no backend — a static site.
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 20+
+- A free **Census API key** — request one at
+  https://api.census.gov/data/key_signup.html (arrives by email; click the activation link).
+
+### Setup
+
+```bash
+npm install
+cp .env.example .env      # then edit .env and paste your key:
+# VITE_CENSUS_KEY=your_census_api_key_here
+```
+
+The Census key is compiled into the client bundle. That's expected — Census keys are
+rate-limit identifiers, not secrets, and are designed for client-side use.
+
+### Run
+
+```bash
+npm run dev        # dev server at http://localhost:5173
+npm test           # run the unit suite once
+npm run test:watch # watch mode
+npm run build      # production build into dist/
+npm run preview    # serve the production build locally
+```
+
+## Architecture
+
+Modules communicate **only** through a single pub/sub `store` — no panel talks to another
+panel directly. State flows one direction: an action updates the store, the data
+controller fetches + joins, writes a `dataset` back into the store, and the map and every
+panel re-read the store and re-render.
+
+```
+                ┌─────────┐
+   user action  │  store  │  single source of truth (pub/sub)
+  ───────────▶  └────┬────┘
+                     │ subscribe
+      ┌──────────────┼───────────────┬──────────────┐
+      ▼              ▼               ▼              ▼
+ controller        map            panels         search
+ (census /      (choropleth:    (ranking,      (jump to a
+  elections      sequential /     details,       place)
+  source) ──▶    diverging /      compare)
+ join + write    bivariate)
+  dataset
+```
+
+- **`store/`** — `createStore`: `getState` / `setState` (merge + notify) / `subscribe`.
+- **`data/`** — `censusClient` (live ACS fetch + normalize), `electionsSource` (bundled
+  results, same interface), `join` (values onto feature IDs by FIPS, explicit no-data),
+  `factors` (the registry: single-variable and computed multi-variable factors),
+  `controller` (reacts to the store, picks a source, scopes rows to on-screen features,
+  drops stale responses).
+- **`map/`** — `geo` (TopoJSON → features + FIPS lists), `map` (D3 choropleth: sequential
+  blues, diverging red↔blue, or bivariate; legend; zoom; hover/click), `bivariate` (palette
+  + tercile helpers).
+- **`shell/`** — layout (collapsible two rails + tabbed analysis), year slider, election
+  toggle, error banner, footer.
+- **`panels/`** — `ranking`, `details`, `compare`; each is `{ id, label, mount, unmount }`.
+- **`search/`** — header search that writes a selection into the store.
+
+### Adding a factor
+
+Add an entry to `FACTOR_LIST` in `src/data/factors.js`:
+
+```js
+// single Census variable
+{ id: 'median_income', label: 'Median income', variable: 'B19013_001E', dataset: 'acs/acs5', format: formatUsd }
+
+// computed from several counts (stays stable across all slider years)
+{ id: 'homeownership_rate', label: 'Homeownership rate', dataset: 'acs/acs5', format: formatPercent,
+  variables: ['B25003_002E', 'B25003_001E'], compute: ratioPct }
+```
+
+Prefer `B`-code detail tables over `DP` profile codes — profile codes drift between ACS
+vintages, which breaks the year slider. Verify any new variable across the full year range
+before shipping it.
+
+## Deployment
+
+The app is a static site served by nginx in a container.
+
+```bash
+# build + push a multi-arch image
+docker buildx build --platform linux/amd64,linux/arm64 \
+  --build-arg VITE_CENSUS_KEY=$(grep VITE_CENSUS_KEY .env | cut -d= -f2) \
+  -t ghcr.io/kquizz/demographic-explorer:latest --push .
+
+# run it (behind a Cloudflare tunnel → http://localhost:8791)
+docker run -d --name demographic-explorer -p 8791:80 --restart unless-stopped \
+  ghcr.io/kquizz/demographic-explorer:latest
+```
+
+## Design docs
+
+- Design spec: [`docs/superpowers/specs/2026-07-27-us-demographics-explorer-design.md`](docs/superpowers/specs/2026-07-27-us-demographics-explorer-design.md)
+- Implementation plan: [`docs/superpowers/plans/2026-07-27-us-demographics-explorer.md`](docs/superpowers/plans/2026-07-27-us-demographics-explorer.md)

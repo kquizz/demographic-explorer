@@ -1,5 +1,6 @@
-.shell { font: 14px system-ui, sans-serif; color: #333; }
-.topbar { background: #2b3a55; color: #fff; padding: 8px 12px; display: flex; align-items: center; gap: 12px; }
+body { margin: 0; }
+.shell { font: 14px system-ui, sans-serif; color: #333; display: flex; flex-direction: column; height: 100vh; }
+.topbar { background: #2b3a55; color: #fff; padding: 8px 12px; display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
 .topbar .app-title { font-weight: 600; }
 .topbar #year-slot { margin-left: auto; }
 .topbar #search-slot { margin-left: 12px; }
@@ -11,7 +12,13 @@
 .election-year { background: #3a4a68; color: #cdd6e6; border: 1px solid #4a5a78; border-radius: 5px;
   padding: 3px 9px; cursor: pointer; }
 .election-year.on { background: #7aa2e3; color: #16233b; font-weight: 600; border-color: #7aa2e3; }
-.body-row { display: flex; height: calc(100vh - 40px); }
+.body-row { display: flex; flex: 1 1 auto; min-height: 0; }
+.appfooter { flex: 0 0 auto; background: #f4f6fa; border-top: 1px solid #dde;
+  padding: 5px 12px; font-size: 11px; color: #667; display: flex; gap: 12px;
+  align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.appfooter a { color: #3b6cc4; text-decoration: none; }
+.appfooter a:hover { text-decoration: underline; }
+.appfooter .footer-note { color: #99a; font-style: italic; }
 .rail { background: #eef1f6; padding: 10px; width: 180px; transition: width .2s; overflow: hidden; }
 .rail.collapsed { width: 28px; padding: 10px 4px; }
 .rail.collapsed .rail-title, .rail.collapsed .factor-list,
