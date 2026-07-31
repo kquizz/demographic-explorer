@@ -68,4 +68,44 @@ describe('createComparePanel', () => {
     panel.unmount()
     expect(store.getState().compare).toBe(null)
   })
+
+  it('draws a scatter dot per area with a Pearson r readout', async () => {
+    const el = document.createElement('div')
+    const store = createStore(state)
+    const bRows = [
+      { id: '01', name: 'Alabama', value: 5024279 },
+      { id: '02', name: 'Alaska', value: 733391 }
+    ]
+    const client = { fetchFactor: vi.fn(() => Promise.resolve(bRows)) }
+    createComparePanel({ client }).mount(el, store)
+
+    const pick = el.querySelector('.compare-pick')
+    pick.value = 'population'
+    pick.dispatchEvent(new Event('change', { bubbles: true }))
+
+    await vi.waitFor(() => expect(el.querySelector('.compare-scatter circle.dot')).toBeTruthy())
+    expect(el.querySelectorAll('.compare-scatter circle.dot').length).toBe(2)
+    expect(el.querySelector('.r-readout').textContent).toContain('r =')
+  })
+
+  it('highlights the scatter dot matching store.hoveredId', async () => {
+    const el = document.createElement('div')
+    const store = createStore(state)
+    const bRows = [
+      { id: '01', name: 'Alabama', value: 5024279 },
+      { id: '02', name: 'Alaska', value: 733391 }
+    ]
+    const client = { fetchFactor: vi.fn(() => Promise.resolve(bRows)) }
+    createComparePanel({ client }).mount(el, store)
+
+    const pick = el.querySelector('.compare-pick')
+    pick.value = 'population'
+    pick.dispatchEvent(new Event('change', { bubbles: true }))
+    await vi.waitFor(() => expect(el.querySelector('.compare-scatter circle.dot')).toBeTruthy())
+
+    store.setState({ hoveredId: '02' })
+    const hi = el.querySelectorAll('.compare-scatter circle.dot.hi')
+    expect(hi.length).toBe(1)
+    expect(hi[0].getAttribute('data-id')).toBe('02')
+  })
 })

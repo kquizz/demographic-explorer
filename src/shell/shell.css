@@ -66,6 +66,14 @@ body { margin: 0; }
 .details .stat { display: flex; justify-content: space-between; gap: 8px; }
 .details-empty { color: #778; }
 .compare-pick { margin: 6px 0; width: 100%; }
+.compare-scatter { margin: 4px 0 10px; }
+.compare-scatter .scatter-svg { width: 100%; height: auto; display: block; }
+.compare-scatter .frame { fill: none; stroke: #e2e6ee; }
+.compare-scatter .dot { fill: #4576b5; fill-opacity: 0.5; cursor: pointer; }
+.compare-scatter .dot:hover, .compare-scatter .dot.hi { fill: #d62728; fill-opacity: 1; }
+.compare-scatter .axis-label { font-size: 10px; fill: #778; }
+.compare-scatter .r-readout { font-size: 13px; font-weight: 600; text-align: center; }
+.compare-scatter .r-strength { color: #778; font-weight: 400; }
 
 /* error banner */
 .error-banner { background: #fde8e8; color: #922; padding: 8px 12px; display: flex;
