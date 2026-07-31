@@ -78,9 +78,10 @@ export const FACTOR_LIST = [
     variables: ['B05002_013E', 'B05002_001E'], compute: ratioPct
   },
 
-  // Elections — bundled dataset (not Census). Diverging red<->blue by Dem-Rep margin;
-  // uses the election-year picker (2020/2024) instead of the ACS year slider.
-  { id: 'vote_margin', label: 'Presidential margin', source: 'elections', scale: 'diverging', format: formatMargin }
+  // Elections — bundled dataset (not Census). Diverging red<->blue.
+  // Margin uses the election-year picker (2020/2024); swing is a fixed 2020->2024 diff.
+  { id: 'vote_margin', label: 'Presidential margin', source: 'elections', metric: 'margin', scale: 'diverging', format: formatMargin },
+  { id: 'vote_swing', label: 'Presidential swing (’20→’24)', source: 'elections', metric: 'swing', scale: 'diverging', format: formatMargin }
 ]
 
 export const FACTORS = Object.fromEntries(FACTOR_LIST.map((f) => [f.id, f]))

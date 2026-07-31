@@ -23,10 +23,14 @@ describe('FACTORS registry', () => {
     }
   })
 
-  it('marks the elections factor with its own source and diverging scale', () => {
+  it('marks the elections factors with their own source, metric, and diverging scale', () => {
     expect(FACTORS.vote_margin.source).toBe('elections')
+    expect(FACTORS.vote_margin.metric).toBe('margin')
     expect(FACTORS.vote_margin.scale).toBe('diverging')
     expect(FACTORS.vote_margin.format(-13.7)).toBe('R+13.7')
+    expect(FACTORS.vote_swing.source).toBe('elections')
+    expect(FACTORS.vote_swing.metric).toBe('swing')
+    expect(FACTORS.vote_swing.scale).toBe('diverging')
   })
 
   it('computes share-shaped factors as sum(parts)/total (education attainment)', () => {

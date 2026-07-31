@@ -10,7 +10,8 @@ export function createDataController(store, client, geo, factors, elections = nu
     const f = factors[factor]
     if (f.source === 'elections') {
       return elections.fetchFactor({
-        geoLevel: state.geoLevel, selectedState: state.selectedState, electionYear: state.electionYear
+        geoLevel: state.geoLevel, selectedState: state.selectedState,
+        electionYear: state.electionYear, metric: f.metric
       })
     }
     return client.fetchFactor({

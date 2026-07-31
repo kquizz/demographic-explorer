@@ -2,6 +2,10 @@ import { describe, it, expect } from 'vitest'
 import { createElectionsSource } from '../src/data/electionsSource.js'
 
 const data = {
+  2020: {
+    '01': { n: 'Alabama', d: 120, r: 280, t: 400 },        // D−R = −40 (R+40)
+    '06': { n: 'California', d: 50, r: 50, t: 100 }         // even
+  },
   2024: {
     '01': { n: 'Alabama', d: 100, r: 300, t: 400 },       // state agg (R+50)
     '06': { n: 'California', d: 60, r: 40, t: 100 },        // state agg (D+20)
@@ -29,6 +33,19 @@ describe('createElectionsSource', () => {
 
   it('yields null margin where there are no votes', async () => {
     const rows = await src.fetchFactor({ geoLevel: 'nation', selectedState: null, electionYear: 2024 })
+    expect(rows.find((r) => r.id === '72').value).toBe(null)
+  })
+
+  it('computes swing as margin(2024) − margin(2020)', async () => {
+    const rows = await src.fetchFactor({ geoLevel: 'nation', selectedState: null, metric: 'swing' })
+    const byId = Object.fromEntries(rows.map((r) => [r.id, r.value]))
+    expect(byId['01']).toBe(-10) // AL: −50 − (−40) = −10 (10 pts toward R)
+    expect(byId['06']).toBe(20) //  CA: +20 − 0     = +20 (20 pts toward D)
+  })
+
+  it('yields null swing when a county is missing from one election', async () => {
+    // 72 (Puerto Rico) exists only in 2024 -> no swing
+    const rows = await src.fetchFactor({ geoLevel: 'nation', selectedState: null, metric: 'swing' })
     expect(rows.find((r) => r.id === '72').value).toBe(null)
   })
 })

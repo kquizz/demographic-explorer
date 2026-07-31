@@ -55,9 +55,11 @@ yearSlot.append(acsWrap, elecWrap)
 mountYearSlider(acsWrap, store, YEARS)
 mountElectionYearToggle(elecWrap, store, ELECTION_YEARS)
 store.subscribe((s) => {
-  const isElection = FACTORS[s.factor]?.source === 'elections'
-  acsWrap.style.display = isElection ? 'none' : ''
-  elecWrap.style.display = isElection ? '' : 'none'
+  const f = FACTORS[s.factor]
+  const isElection = f?.source === 'elections'
+  const isSwing = f?.metric === 'swing' // fixed 2020->2024 diff — no time control applies
+  acsWrap.style.display = !isElection ? '' : 'none'
+  elecWrap.style.display = isElection && !isSwing ? '' : 'none'
 })
 
 store.setState({ factor: 'median_income' })
