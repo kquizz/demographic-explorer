@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { createStore } from '../src/store/store.js'
 import { createDataController } from '../src/data/controller.js'
+import { formatUsd } from '../src/lib/format.js'
 
 const geoStub = {
   featureIds: (geoLevel) => (geoLevel === 'nation' ? ['01', '02', '99'] : ['01001'])
@@ -113,6 +114,42 @@ describe('createDataController', () => {
     store.setState({ year: 2015 })
     await vi.waitFor(() => expect(client.fetchFactor).toHaveBeenCalledTimes(2))
     expect(client.fetchFactor.mock.calls[1][0]).toMatchObject({ year: 2015 })
+  })
+
+  it('computes a signed, diverging delta dataset when a baseline year is set', async () => {
+    const byYear = {
+      2018: [{ id: '01', name: 'Alabama', value: 100 }, { id: '02', name: 'Alaska', value: 200 }],
+      2023: [{ id: '01', name: 'Alabama', value: 130 }, { id: '02', name: 'Alaska', value: 190 }]
+    }
+    const client = { fetchFactor: vi.fn(({ year }) => Promise.resolve(byYear[year])) }
+    const factors = {
+      median_income: {
+        id: 'median_income', variable: 'B19013_001E', dataset: 'acs/acs5',
+        format: formatUsd, label: 'Median income'
+      }
+    }
+    const store = createStore({ ...initial, baselineYear: 2018 })
+    createDataController(store, client, geoStub, factors)
+    store.setState({ factor: 'median_income' })
+    await vi.waitFor(() => expect(store.getState().dataset.status).toBe('ready'))
+
+    const ds = store.getState().dataset
+    expect(client.fetchFactor).toHaveBeenCalledTimes(2) // current + baseline
+    expect(ds.byId['01'].value).toBe(30)  // 130 − 100
+    expect(ds.byId['02'].value).toBe(-10) // 190 − 200
+    expect(ds.diverging).toBe(true)
+    expect(ds.label).toBe('Δ Median income (2018→2023)')
+    expect(ds.format(30)).toBe('+$30')
+  })
+
+  it('does not treat baseline === current year as a delta', async () => {
+    const client = { fetchFactor: vi.fn(() => Promise.resolve([{ id: '01', name: 'AL', value: 5 }])) }
+    const store = createStore({ ...initial, baselineYear: 2023 }) // same as year
+    createDataController(store, client, geoStub, factorsStub)
+    store.setState({ factor: 'median_income' })
+    await vi.waitFor(() => expect(store.getState().dataset.status).toBe('ready'))
+    expect(client.fetchFactor).toHaveBeenCalledTimes(1) // single fetch, no delta
+    expect(store.getState().dataset.diverging).toBe(false)
   })
 
   it('writes an error dataset when the client rejects', async () => {

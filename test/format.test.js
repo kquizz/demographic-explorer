@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatUsd, formatPercent, formatNumber, formatDecimal, formatGini, formatMargin } from '../src/lib/format.js'
+import { formatUsd, formatPercent, formatNumber, formatDecimal, formatGini, formatMargin, signed } from '../src/lib/format.js'
 
 describe('formatters', () => {
   it('formats USD with a dollar sign and thousands separators', () => {
@@ -24,6 +24,14 @@ describe('formatters', () => {
     expect(formatMargin(-13.7)).toBe('R+13.7')
     expect(formatMargin(0)).toBe('Even')
     expect(formatMargin(null)).toBe('—')
+  })
+  it('wraps a base formatter to render a signed delta', () => {
+    const s = signed(formatUsd)
+    expect(s(1234)).toBe('+$1,234')
+    expect(s(-1234)).toBe('−$1,234')
+    expect(s(0)).toBe('±$0')
+    expect(s(null)).toBe('—')
+    expect(signed(formatPercent)(-3.2)).toBe('−3.2%')
   })
   it('renders null as an em dash', () => {
     expect(formatUsd(null)).toBe('—')

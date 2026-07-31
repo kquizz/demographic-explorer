@@ -8,6 +8,12 @@ body { margin: 0; }
 .year-slider .year-value { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums;
   min-width: 34px; text-align: right; }
 .year-slider .year-input { accent-color: #7aa2e3; }
+.baseline-wrap { font-size: 12px; color: #cdd6e6; display: inline-flex; align-items: center;
+  gap: 5px; margin-left: 12px; }
+.baseline-wrap .baseline-lbl { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+.baseline-wrap .baseline-year { background: #3a4a68; color: #cdd6e6; border: 1px solid #4a5a78;
+  border-radius: 5px; padding: 1px 4px; }
+.baseline-wrap .baseline-year:disabled { opacity: 0.5; }
 .election-toggle { font-size: 12px; color: #cdd6e6; display: inline-flex; align-items: center; gap: 6px; }
 .election-year { background: #3a4a68; color: #cdd6e6; border: 1px solid #4a5a78; border-radius: 5px;
   padding: 3px 9px; cursor: pointer; }

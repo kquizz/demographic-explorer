@@ -11,7 +11,7 @@ const NO_DATA_FILL = '#e8e8ea'
 // factors, otherwise a sequential blues ramp over the value extent.
 const singleFactorScale = (state) => {
   const [min, max] = state.dataset.extent
-  if (FACTORS[state.dataset.factor]?.scale === 'diverging') {
+  if (state.dataset.diverging || FACTORS[state.dataset.factor]?.scale === 'diverging') {
     const m = Math.max(Math.abs(min ?? 0), Math.abs(max ?? 0)) || 1
     return scaleDiverging(interpolateRdBu).domain([-m, 0, m])
   }
@@ -105,11 +105,11 @@ export function createMap(el, geo, store) {
   const renderLegend = (state) => {
     const [min, max] = state.dataset.extent
     const factor = FACTORS[state.dataset.factor]
-    const fmt = factor?.format ?? String
-    const diverging = factor?.scale === 'diverging'
+    const fmt = state.dataset.format ?? factor?.format ?? String
+    const diverging = state.dataset.diverging || factor?.scale === 'diverging'
     const scale = singleFactorScale(state)
     legend.attr('class', diverging ? 'legend diverging-legend' : 'legend').html('')
-    legend.append('div').attr('class', 'legend-title').text(factor?.label ?? '')
+    legend.append('div').attr('class', 'legend-title').text(state.dataset.label ?? factor?.label ?? '')
     const ramp = legend.append('div').attr('class', 'ramp')
     if (min != null) {
       ramp.append('span').attr('class', 'lo').text(fmt(min))

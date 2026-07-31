@@ -6,7 +6,7 @@ export function createRankingPanel() {
 
   const render = (store) => {
     const { dataset, factor } = store.getState()
-    const fmt = FACTORS[factor]?.format ?? String
+    const fmt = dataset.format ?? FACTORS[factor]?.format ?? String
     const ranked = dataset.rows
       .filter((r) => r.value != null)
       .sort((a, b) => b.value - a.value)

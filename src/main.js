@@ -15,6 +15,7 @@ import { createComparePanel } from './panels/compare.js'
 import { mountSearch } from './search/search.js'
 import { mountErrorBanner } from './shell/error-banner.js'
 import { mountYearSlider } from './shell/year-slider.js'
+import { mountBaselinePicker } from './shell/baseline-picker.js'
 import { mountElectionYearToggle } from './shell/election-toggle.js'
 
 // ACS 5-year vintages where all factors resolve cleanly (B15003 education starts 2012).
@@ -24,7 +25,7 @@ const ELECTION_YEARS = [2020, 2024]
 
 const store = createStore({
   factor: null, geoLevel: 'nation', selectedState: null,
-  year: LATEST_YEAR, electionYear: 2024,
+  year: LATEST_YEAR, electionYear: 2024, baselineYear: null,
   hoveredId: null, pinnedId: null, compare: null,
   dataset: { status: 'idle', factor: null, geoLevel: null, rows: [], byId: {},
     values: {}, extent: [null, null], error: null }
@@ -53,6 +54,10 @@ const elecWrap = document.createElement('span')
 elecWrap.style.display = 'none'
 yearSlot.append(acsWrap, elecWrap)
 mountYearSlider(acsWrap, store, YEARS)
+const baselineWrap = document.createElement('span')
+baselineWrap.className = 'baseline-wrap'
+acsWrap.append(baselineWrap)
+mountBaselinePicker(baselineWrap, store, YEARS)
 mountElectionYearToggle(elecWrap, store, ELECTION_YEARS)
 store.subscribe((s) => {
   const f = FACTORS[s.factor]

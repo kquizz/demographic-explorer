@@ -7,8 +7,8 @@ export function createDetailsPanel() {
   const render = (store) => {
     const { dataset, factor, hoveredId, pinnedId } = store.getState()
     const id = pinnedId ?? hoveredId
-    const fmt = FACTORS[factor]?.format ?? String
-    const label = FACTORS[factor]?.label ?? factor
+    const fmt = dataset.format ?? FACTORS[factor]?.format ?? String
+    const label = dataset.label ?? FACTORS[factor]?.label ?? factor
 
     if (!id) {
       el.innerHTML = '<p class="details-empty">Hover or select an area to see details.</p>'
