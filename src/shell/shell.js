@@ -30,6 +30,8 @@ export function createShell(el, store, { factorList, panels }) {
         <a href="https://www.bls.gov/lau/" target="_blank" rel="noopener">unemployment from the BLS Local Area Unemployment Statistics</a>
         ·
         <a href="https://www.bls.gov/cew/" target="_blank" rel="noopener">wages from the BLS Quarterly Census of Employment and Wages</a>
+        ·
+        <a href="https://www.countyhealthrankings.org/" target="_blank" rel="noopener">life expectancy from County Health Rankings &amp; Roadmaps</a>
       </span>
       <span class="footer-note">Estimates carry margins of error; explore, don't over-read a single number.</span>
     </footer>

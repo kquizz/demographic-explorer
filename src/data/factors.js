@@ -46,6 +46,10 @@ export const FACTOR_LIST = [
     variables: ['B23025_002E', 'B23025_001E'], compute: ratioPct // in labor force / population 16+
   },
   { id: 'gini_index', label: 'Income inequality (Gini)', variable: 'B19083_001E', dataset: 'acs/acs5', format: formatGini },
+  // County Health Rankings life expectancy — a bundled source (not Census). Great
+  // correlation fodder against income, education and wages. Available 2019-2023; earlier
+  // slider years show as no data.
+  { id: 'life_expectancy', label: 'Life expectancy (yrs)', source: 'health', format: formatDecimal },
   {
     id: 'mean_commute', label: 'Mean commute (min)', dataset: 'acs/acs5', format: formatDecimal,
     // aggregate travel time to work / workers who commute (both exclude work-from-home)
