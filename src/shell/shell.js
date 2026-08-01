@@ -28,6 +28,8 @@ export function createShell(el, store, { factorList, panels }) {
         <a href="https://en.wikipedia.org/wiki/Government_trifecta" target="_blank" rel="noopener">state government trifectas compiled from Ballotpedia &amp; Wikipedia</a>
         ·
         <a href="https://www.bls.gov/lau/" target="_blank" rel="noopener">unemployment from the BLS Local Area Unemployment Statistics</a>
+        ·
+        <a href="https://www.bls.gov/cew/" target="_blank" rel="noopener">wages from the BLS Quarterly Census of Employment and Wages</a>
       </span>
       <span class="footer-note">Estimates carry margins of error; explore, don't over-read a single number.</span>
     </footer>

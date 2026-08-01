@@ -28,6 +28,10 @@ export const FACTOR_LIST = [
   // Economic
   { id: 'median_income', label: 'Median income', variable: 'B19013_001E', dataset: 'acs/acs5', format: formatUsd },
   { id: 'per_capita_income', label: 'Per-capita income', variable: 'B19301_001E', dataset: 'acs/acs5', format: formatUsd },
+  // BLS QCEW average annual pay — a bundled source (not Census), the mean pay per covered
+  // job. A different economic lens than ACS median household income above. Starts 2014
+  // (the QCEW Open Data API's earliest year); 2012-2013 show as no data.
+  { id: 'qcew_wages', label: 'Avg annual pay (BLS)', source: 'wages', format: formatUsd },
   { id: 'poverty_rate', label: 'Poverty rate', variable: 'DP03_0128PE', dataset: 'acs/acs5/profile', format: formatPercent },
   {
     id: 'unemployment_rate', label: 'Unemployment rate (ACS 5-yr)', dataset: 'acs/acs5', format: formatPercent,

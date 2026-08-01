@@ -2,13 +2,14 @@ import us from 'us-atlas/counties-10m.json'
 import electionData from './data/elections.json'
 import trifectaData from './data/trifectas.json'
 import lausData from './data/laus.json'
+import wageData from './data/wages.json'
 import './shell/shell.css'
 import { createStore } from './store/store.js'
 import { createGeo } from './map/geo.js'
 import { createCensusClient } from './data/censusClient.js'
 import { createElectionsSource } from './data/electionsSource.js'
 import { createTrifectasSource } from './data/trifectasSource.js'
-import { createLausSource } from './data/lausSource.js'
+import { createFipsYearSource } from './data/fipsYearSource.js'
 import { createDataController } from './data/controller.js'
 import { createMap } from './map/map.js'
 import { createShell } from './shell/shell.js'
@@ -42,8 +43,9 @@ const geo = createGeo(us)
 const client = createCensusClient({ key: import.meta.env.VITE_CENSUS_KEY })
 const elections = createElectionsSource(electionData)
 const trifectas = createTrifectasSource(trifectaData, geo)
-const laus = createLausSource(lausData)
-createDataController(store, client, geo, FACTORS, { elections, trifectas, laus })
+const laus = createFipsYearSource(lausData)
+const wages = createFipsYearSource(wageData)
+createDataController(store, client, geo, FACTORS, { elections, trifectas, laus, wages })
 
 const panels = [
   createRankingPanel(),

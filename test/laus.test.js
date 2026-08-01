@@ -58,12 +58,8 @@ describe('createLausSource', () => {
     expect(rows.every((r) => r.id.length === 5 && r.id.startsWith('06'))).toBe(true)
   })
 
-  it('clamps years outside the bundled range to the nearest available year', async () => {
-    const [below] = await source.fetchFactor({ geoLevel: 'nation', year: 1990 })
-    const [first] = await source.fetchFactor({ geoLevel: 'nation', year: 2012 })
-    expect(below.value).toBe(first.value)
-    const [above] = await source.fetchFactor({ geoLevel: 'nation', year: 2999 })
-    const [last] = await source.fetchFactor({ geoLevel: 'nation', year: 2023 })
-    expect(above.value).toBe(last.value)
+  it('returns no rows for years the bundle does not cover', async () => {
+    expect(await source.fetchFactor({ geoLevel: 'nation', year: 1990 })).toEqual([])
+    expect(await source.fetchFactor({ geoLevel: 'nation', year: 2999 })).toEqual([])
   })
 })
