@@ -17,6 +17,8 @@ const sharePct = (v) => {
   if (!total) return null
   return (v.slice(1).reduce((sum, n) => sum + (n || 0), 0) / total) * 100
 }
+// Plain quotient (no *100) for mean-style factors, e.g. aggregate minutes / workers.
+const ratio = (v) => (v[1] ? v[0] / v[1] : null)
 
 export const FACTOR_LIST = [
   // Population & age
@@ -31,7 +33,17 @@ export const FACTOR_LIST = [
     id: 'unemployment_rate', label: 'Unemployment rate', dataset: 'acs/acs5', format: formatPercent,
     variables: ['B23025_005E', 'B23025_003E'], compute: ratioPct // unemployed / civilian labor force
   },
+  {
+    id: 'labor_force_participation', label: 'Labor force participation', dataset: 'acs/acs5',
+    format: formatPercent,
+    variables: ['B23025_002E', 'B23025_001E'], compute: ratioPct // in labor force / population 16+
+  },
   { id: 'gini_index', label: 'Income inequality (Gini)', variable: 'B19083_001E', dataset: 'acs/acs5', format: formatGini },
+  {
+    id: 'mean_commute', label: 'Mean commute (min)', dataset: 'acs/acs5', format: formatDecimal,
+    // aggregate travel time to work / workers who commute (both exclude work-from-home)
+    variables: ['B08013_001E', 'B08303_001E'], compute: ratio
+  },
 
   // Education
   {
@@ -55,6 +67,8 @@ export const FACTOR_LIST = [
     id: 'homeownership_rate', label: 'Homeownership rate', dataset: 'acs/acs5', format: formatPercent,
     variables: ['B25003_002E', 'B25003_001E'], compute: ratioPct // owner-occupied / occupied units
   },
+  { id: 'rent_burden', label: 'Rent as % of income', variable: 'B25071_001E', dataset: 'acs/acs5', format: formatPercent },
+  { id: 'avg_household_size', label: 'Avg household size', variable: 'B25010_001E', dataset: 'acs/acs5', format: formatDecimal },
 
   // Race, ethnicity & origin (B03002 = Hispanic origin by race; _003/_004/_006 are non-Hispanic)
   {
@@ -76,6 +90,10 @@ export const FACTOR_LIST = [
   {
     id: 'pct_foreign_born', label: '% Foreign-born', dataset: 'acs/acs5', format: formatPercent,
     variables: ['B05002_013E', 'B05002_001E'], compute: ratioPct
+  },
+  {
+    id: 'pct_veterans', label: '% Veterans', dataset: 'acs/acs5', format: formatPercent,
+    variables: ['B21001_002E', 'B21001_001E'], compute: ratioPct // veterans / civilian pop 18+
   },
 
   // Elections — bundled dataset (not Census). Diverging red<->blue.

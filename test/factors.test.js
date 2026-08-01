@@ -46,8 +46,24 @@ describe('FACTORS registry', () => {
     expect(FACTORS.unemployment_rate.compute([500, 10000])).toBe(5)
     // homeownership: 700 owner-occupied / 1000 occupied => 70%
     expect(FACTORS.homeownership_rate.compute([700, 1000])).toBe(70)
+    // labor force participation and veterans share the same ratio-percent shape
+    expect(FACTORS.labor_force_participation.compute([2265008, 3779457])).toBeCloseTo(59.93, 1)
+    expect(FACTORS.pct_veterans.compute([398343, 3630798])).toBeCloseTo(10.97, 1)
     // guards against divide-by-zero
     expect(FACTORS.pct_hispanic.compute([50, 0])).toBe(null)
+  })
+
+  it('computes mean-style ratio factors as a plain quotient, not a percent (commute)', () => {
+    // 46.65M aggregate minutes / 1.94M commuting workers => ~24.1 minutes (NOT *100)
+    expect(FACTORS.mean_commute.compute([46654610, 1936854])).toBeCloseTo(24.09, 2)
+    expect(FACTORS.mean_commute.compute([100, 0])).toBe(null)
+  })
+
+  it('exposes the new single-variable factors on the acs5 detail dataset', () => {
+    for (const id of ['rent_burden', 'avg_household_size']) {
+      expect(FACTORS[id].dataset).toBe('acs/acs5')
+      expect(typeof FACTORS[id].variable).toBe('string')
+    }
   })
   it('includes median_income as the default factor', () => {
     expect(FACTORS.median_income).toBeTruthy()
