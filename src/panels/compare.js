@@ -3,7 +3,7 @@ import { scaleLinear } from 'd3-scale'
 import { extent } from 'd3-array'
 import { FACTOR_LIST, FACTORS } from '../data/factors.js'
 import { createCensusClient } from '../data/censusClient.js'
-import { pearson, describeCorrelation } from '../lib/stats.js'
+import { pearson, describeCorrelation, linearRegression } from '../lib/stats.js'
 
 const SW = 280, SH = 220, PAD = 26
 
@@ -75,6 +75,16 @@ export function createComparePanel({ client = createCensusClient() } = {}) {
       .attr('transform', `translate(9 ${SH / 2}) rotate(-90)`).attr('text-anchor', 'middle')
       .text(FACTORS[factorB].label)
 
+    // Best-fit (OLS) line — the straight line whose tightness r measures — drawn across
+    // the data's x-range, with the dots layered on top.
+    const reg = linearRegression(pts.map((p) => [p.x, p.y]))
+    if (reg) {
+      const [x0, x1] = extent(pts, (p) => p.x)
+      svg.append('line').attr('class', 'fit-line')
+        .attr('x1', x(x0)).attr('y1', y(reg.slope * x0 + reg.intercept))
+        .attr('x2', x(x1)).attr('y2', y(reg.slope * x1 + reg.intercept))
+    }
+
     svg.selectAll('circle.dot').data(pts, (p) => p.id).enter().append('circle')
       .attr('class', 'dot').attr('data-id', (p) => p.id).attr('r', 3.5)
       .attr('cx', (p) => x(p.x)).attr('cy', (p) => y(p.y))
@@ -83,6 +93,21 @@ export function createComparePanel({ client = createCensusClient() } = {}) {
       .on('pointerover', (_e, p) => store.setState({ hoveredId: p.id }))
       .on('pointerout', () => store.setState({ hoveredId: null }))
       .on('click', (_e, p) => store.setState({ pinnedId: p.id })) // click a dot to pin its state
+
+    // Label the few states that most defy the trend (largest vertical distance from the
+    // fit line) — the interesting exceptions to the correlation.
+    if (reg) {
+      const outliers = pts
+        .map((p) => ({ ...p, resid: Math.abs(p.y - (reg.slope * p.x + reg.intercept)) }))
+        .sort((a, b) => b.resid - a.resid)
+        .slice(0, 3)
+      svg.selectAll('text.outlier-label').data(outliers).enter().append('text')
+        .attr('class', 'outlier-label')
+        .attr('x', (p) => Math.min(x(p.x) + 5, SW - PAD))
+        .attr('y', (p) => Math.max(y(p.y) - 5, PAD + 8))
+        .attr('text-anchor', (p) => (x(p.x) > SW - PAD - 40 ? 'end' : 'start'))
+        .text((p) => p.name)
+    }
 
     const strength = describeCorrelation(r)
     host.insertAdjacentHTML('beforeend',

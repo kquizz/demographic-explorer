@@ -139,8 +139,26 @@ body { margin: 0; }
 .compare-scatter .dot { fill: #4576b5; fill-opacity: 0.5; cursor: pointer; }
 .compare-scatter .dot:hover, .compare-scatter .dot.hi { fill: #d62728; fill-opacity: 1; }
 .compare-scatter .axis-label { font-size: 10px; fill: #778; }
+.compare-scatter .fit-line { stroke: #d62728; stroke-width: 1.5; stroke-dasharray: 4 3; opacity: 0.75; }
+.compare-scatter .outlier-label { font-size: 9px; fill: #555; paint-order: stroke;
+  stroke: #eef1f6; stroke-width: 2.5px; }
 .compare-scatter .r-readout { font-size: 13px; font-weight: 600; text-align: center; }
 .compare-scatter .r-strength { color: #778; font-weight: 400; }
+
+/* correlations ("what correlates with this?") panel */
+.corr-head { font-size: 12px; color: #556; margin: 4px 0 8px; line-height: 1.4; }
+.corr-head strong { font-size: 13px; color: #333; }
+.corr-empty, .corr-loading { font-size: 12px; color: #99a; font-style: italic; padding: 6px 0; }
+.corr-row { display: grid; grid-template-columns: 1fr 60px 40px; align-items: center;
+  gap: 6px; padding: 3px 0; font-size: 12px; }
+.corr-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.corr-bar-wrap { background: #e2e6ee; border-radius: 3px; height: 8px; overflow: hidden; }
+.corr-bar { display: block; height: 100%; }
+.corr-bar.pos { background: #4576b5; }
+.corr-bar.neg { background: #d67f7f; }
+.corr-r { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.corr-r.pos { color: #35618f; }
+.corr-r.neg { color: #b5482f; }
 
 /* error banner */
 .error-banner { background: #fde8e8; color: #922; padding: 8px 12px; display: flex;

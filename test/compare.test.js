@@ -86,6 +86,7 @@ describe('createComparePanel', () => {
     await vi.waitFor(() => expect(el.querySelector('.compare-scatter circle.dot')).toBeTruthy())
     expect(el.querySelectorAll('.compare-scatter circle.dot').length).toBe(2)
     expect(el.querySelector('.r-readout').textContent).toContain('r =')
+    expect(el.querySelector('.compare-scatter .fit-line')).toBeTruthy() // best-fit line drawn
   })
 
   it('highlights the scatter dot matching store.hoveredId', async () => {

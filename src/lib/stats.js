@@ -18,6 +18,25 @@ export function pearson(pairs) {
   return cov / Math.sqrt(dx * dy)
 }
 
+// Ordinary least-squares fit over [x, y] pairs, returning { slope, intercept } for the
+// best-fit line y = slope*x + intercept, or null when it's undefined (fewer than two
+// usable pairs, or x has zero variance so no line can be fit).
+export function linearRegression(pairs) {
+  const pts = pairs.filter(
+    ([x, y]) => x != null && y != null && Number.isFinite(x) && Number.isFinite(y)
+  )
+  const n = pts.length
+  if (n < 2) return null
+  let sx = 0, sy = 0, sxx = 0, sxy = 0
+  for (const [x, y] of pts) {
+    sx += x; sy += y; sxx += x * x; sxy += x * y
+  }
+  const denom = n * sxx - sx * sx
+  if (denom === 0) return null
+  const slope = (n * sxy - sx * sy) / denom
+  return { slope, intercept: (sy - slope * sx) / n }
+}
+
 // Plain-language description of a correlation, e.g. "strong positive".
 export function describeCorrelation(r) {
   if (r == null) return 'not enough data'

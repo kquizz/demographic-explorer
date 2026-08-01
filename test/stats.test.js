@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { pearson, describeCorrelation } from '../src/lib/stats.js'
+import { pearson, describeCorrelation, linearRegression } from '../src/lib/stats.js'
 
 describe('pearson', () => {
   it('returns 1 for a perfect positive line', () => {
@@ -21,6 +21,20 @@ describe('pearson', () => {
   })
   it('returns null when a variable has zero variance', () => {
     expect(pearson([[5, 1], [5, 2], [5, 3]])).toBe(null)
+  })
+})
+
+describe('linearRegression', () => {
+  it('recovers the slope and intercept of a clean line', () => {
+    // y = 2x + 1
+    const fit = linearRegression([[0, 1], [1, 3], [2, 5], [3, 7]])
+    expect(fit.slope).toBeCloseTo(2, 6)
+    expect(fit.intercept).toBeCloseTo(1, 6)
+  })
+
+  it('drops null pairs and returns null when x has no variance', () => {
+    expect(linearRegression([[5, 1], [5, 2], [5, 3]])).toBe(null)
+    expect(linearRegression([[1, 1], [null, 2]])).toBe(null) // one usable pair
   })
 })
 
