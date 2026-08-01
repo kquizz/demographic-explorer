@@ -13,12 +13,13 @@
 // Ballotpedia's ledger at every year 2012-2024 (test/trifectas.test.js locks them all).
 //
 // Chamber-tie note: Ballotpedia counts a tied chamber as controlled by the party of the
-// tie-breaking Lt. Governor. That is why Virginia (Senate 20-20 in 2012-2013, R Lt. Gov)
-// is an R trifecta through 2013, and why Wikipedia's aggregate table shows 24 R for 2013
-// where Ballotpedia shows 25 — Wikipedia treats the VA tie as divided. We follow
-// Ballotpedia. Connecticut's 18-18 Senate in 2017-2018 is instead treated as divided
-// because control was power-shared, not decided by the Lt. Governor.
-// Re-run: `node scripts/build-trifectas.mjs`.
+// tie-breaking Lt. Governor, and applies it both ways. Virginia (Senate 20-20 in
+// 2012-2013, R Lt. Gov) is an R trifecta through 2013 — which is why Wikipedia's aggregate
+// shows 24 R for 2013 where Ballotpedia shows 25, since Wikipedia treats the VA tie as
+// divided. Connecticut (Senate 18-18 in 2017-2018, D Lt. Gov Wyman) stays a D trifecta by
+// the same rule: Ballotpedia records CT as a continuous D trifecta since 2011, despite the
+// committee-level power-sharing deal those years. Both cases follow Ballotpedia over
+// Wikipedia's tie-as-divided convention. Re-run: `node scripts/build-trifectas.mjs`.
 //
 // Convention: a year Y is the GOVERNANCE year — control in effect during calendar Y,
 // i.e. the result of elections held through November Y-1. This lines up with the ACS
@@ -40,7 +41,7 @@ const STATES = [
   ['05', 'Arkansas', ['D', 2012, 2012], ['R', 2015, 2024]],
   ['06', 'California', ['D', 2012, 2024]],
   ['08', 'Colorado', ['D', 2013, 2014], ['D', 2019, 2024]],
-  ['09', 'Connecticut', ['D', 2012, 2016], ['D', 2019, 2024]],
+  ['09', 'Connecticut', ['D', 2012, 2024]],
   ['10', 'Delaware', ['D', 2012, 2024]],
   ['12', 'Florida', ['R', 2012, 2024]],
   ['13', 'Georgia', ['R', 2012, 2024]],

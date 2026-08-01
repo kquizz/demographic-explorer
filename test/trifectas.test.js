@@ -17,8 +17,8 @@ describe('trifectas.json checksum', () => {
     { year: 2021, R: 23, D: 15 },
     { year: 2020, R: 21, D: 15 },
     { year: 2019, R: 22, D: 14 },
-    { year: 2018, R: 26, D: 7 },
-    { year: 2017, R: 26, D: 5 },
+    { year: 2018, R: 26, D: 8 },
+    { year: 2017, R: 26, D: 6 },
     { year: 2016, R: 23, D: 7 },
     { year: 2015, R: 24, D: 7 },
     { year: 2014, R: 24, D: 13 },
@@ -60,6 +60,15 @@ describe('trifectaStatus', () => {
     expect(trifectaStatus(trifectaData, '51', 2013)).toBe('R')
     expect(trifectaStatus(trifectaData, '51', 2014)).toBe('divided')
     expect(trifectaStatus(trifectaData, '51', 2020)).toBe('D') // Dems swept both chambers
+  })
+
+  it('keeps Connecticut D through the 2017-2018 Senate tie (same tie-break rule)', () => {
+    // CT Senate was 18-18 in 2017-2018; the D Lt. Governor's tie-break keeps it a D
+    // trifecta, so CT is continuously D 2012-2024 with no divided gap. Same rule as VA.
+    expect(trifectaStatus(trifectaData, '09', 2016)).toBe('D')
+    expect(trifectaStatus(trifectaData, '09', 2017)).toBe('D')
+    expect(trifectaStatus(trifectaData, '09', 2018)).toBe('D')
+    expect(trifectaStatus(trifectaData, '09', 2019)).toBe('D')
   })
 
   it('returns null for areas with no state government', () => {

@@ -56,10 +56,11 @@ don't over-read a single number. Alaska reports presidential results by district
 than county, so its county-level margins are approximate (the state-level figure is solid).
 The trifecta series has been reconciled state-by-state against Ballotpedia's trifecta-change
 ledger and now matches its national totals at **every year 2012–2024**
-(`test/trifectas.test.js` locks all of them). The mid-decade years turn on chamber-tie and
-party-switch judgment calls that this pass resolved in Ballotpedia's favor — most notably
-Virginia's 20-20 Senate in 2012–2013, which Ballotpedia (unlike Wikipedia) counts as an R
-trifecta via the Lt. Governor's tie-break. See the header of
+(`test/trifectas.test.js` locks all of them). Several years turn on chamber-tie and
+party-switch judgment calls that this pass resolved in Ballotpedia's favor — Virginia's
+20-20 Senate in 2012–2013 (an R trifecta via the R Lt. Governor's tie-break) and
+Connecticut's 18-18 Senate in 2017–2018 (still a D trifecta via the D Lt. Governor's),
+both of which Wikipedia instead treats as divided. See the header of
 `scripts/build-trifectas.mjs` for the tie-break convention. **The poverty-vs-trifecta
 comparison is
 correlational and geographically confounded** — the panel's population-weighting and
