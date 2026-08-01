@@ -19,6 +19,7 @@ import { createRankingPanel } from './panels/ranking.js'
 import { createDetailsPanel } from './panels/details.js'
 import { createComparePanel } from './panels/compare.js'
 import { createCorrelationsPanel } from './panels/correlations.js'
+import { createExplorePanel } from './panels/explore.js'
 import { createTrifectaPanel } from './panels/trifecta.js'
 import { mountSearch } from './search/search.js'
 import { mountErrorBanner } from './shell/error-banner.js'
@@ -55,6 +56,7 @@ const panels = [
   createDetailsPanel({ client, years: YEARS }),
   createComparePanel({ client }),
   createCorrelationsPanel({ client, geo, sources }),
+  createExplorePanel({ client, geo, sources }),
   createTrifectaPanel({ client, trifectaData })
 ]
 const app = document.getElementById('app')

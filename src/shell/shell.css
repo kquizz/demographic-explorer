@@ -172,6 +172,24 @@ body { margin: 0; }
 .corr-r.pos { color: #35618f; }
 .corr-r.neg { color: #b5482f; }
 
+/* explore ("small multiples") panel */
+.explore .lens-pick { font-size: 12px; color: #556; display: flex; align-items: center; gap: 6px; }
+.explore .lens-select { flex: 1; font-size: 12px; padding: 3px 4px; border: 1px solid #cbd3e1;
+  border-radius: 5px; background: #fff; }
+.explore-note { font-size: 11px; color: #99a; font-style: italic; margin: 6px 0 8px; line-height: 1.4; }
+.mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.mini-chart { background: #fff; border: 1px solid #e2e6ee; border-radius: 6px; padding: 5px 6px; }
+.mini-title { font-size: 11px; font-weight: 600; color: #445; cursor: pointer;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mini-title:hover { color: #3b6cc4; text-decoration: underline; }
+.mini-plot .mini-svg { width: 100%; height: auto; display: block; }
+.mini-dot { fill-opacity: 0.7; }
+.mini-axis { stroke: #cbd3e1; stroke-width: 1; }
+.mini-fit { stroke: #444; stroke-width: 1.2; stroke-dasharray: 3 2; opacity: 0.8; }
+.mini-mean { stroke: #333; stroke-width: 1.6; }
+.mini-cat { font-size: 8px; fill: #778; }
+.mini-stat { font-size: 11px; color: #556; font-variant-numeric: tabular-nums; text-align: right; }
+
 /* error banner */
 .error-banner { background: #fde8e8; color: #922; padding: 8px 12px; display: flex;
   align-items: center; gap: 8px; border-bottom: 1px solid #f3caca; }
