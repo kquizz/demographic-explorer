@@ -92,6 +92,36 @@ describe('createCensusClient', () => {
     expect(global.fetch).toHaveBeenCalledTimes(2) // different years are not shared cache entries
   })
 
+  it('shares one in-flight request between concurrent identical calls', async () => {
+    let release
+    global.fetch = vi.fn(
+      () =>
+        new Promise((resolve) => {
+          release = () => resolve({ ok: true, text: () => Promise.resolve(JSON.stringify(stateTable)) })
+        })
+    )
+    const client = createCensusClient({ key: 'k' })
+    const args = { variable: 'B19013_001E', dataset: 'acs/acs5', geoLevel: 'nation' }
+    const p1 = client.fetchFactor(args)
+    const p2 = client.fetchFactor(args) // fired before the first resolves
+    release()
+    await Promise.all([p1, p2])
+    expect(global.fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('evicts a failed request so a later call retries instead of caching the failure', async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 500 })
+      .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(JSON.stringify(stateTable)) })
+    const client = createCensusClient({ key: 'k' })
+    const args = { variable: 'B19013_001E', dataset: 'acs/acs5', geoLevel: 'nation' }
+    await expect(client.fetchFactor(args)).rejects.toThrow(/Census request failed/)
+    const rows = await client.fetchFactor(args)
+    expect(rows[0].id).toBe('01')
+    expect(global.fetch).toHaveBeenCalledTimes(2)
+  })
+
   it('requests multiple variables and derives the value via compute', async () => {
     const eduTable = [
       ['NAME', 'B15003_001E', 'B15003_022E', 'B15003_023E', 'state'],

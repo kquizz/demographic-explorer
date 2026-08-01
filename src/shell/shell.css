@@ -71,6 +71,14 @@ body { margin: 0; }
 .details h3 { margin: 6px 0; }
 .details .stat { display: flex; justify-content: space-between; gap: 8px; }
 .details-empty { color: #778; }
+.details-spark { margin-top: 10px; }
+.details-spark .spark-svg { width: 100%; height: auto; display: block; }
+.details-spark .spark-line { fill: none; stroke: #3b6cc4; stroke-width: 1.5;
+  stroke-linejoin: round; stroke-linecap: round; }
+.details-spark .spark-now { fill: #d62728; }
+.details-spark .spark-meta { display: flex; justify-content: space-between;
+  font-size: 10px; color: #778; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.details-spark .spark-note { color: #99a; font-size: 11px; font-style: italic; margin: 4px 0 0; }
 .compare-pick { margin: 6px 0; width: 100%; }
 .compare-scatter { margin: 4px 0 10px; }
 .compare-scatter .scatter-svg { width: 100%; height: auto; display: block; }

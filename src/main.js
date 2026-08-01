@@ -36,7 +36,11 @@ const client = createCensusClient({ key: import.meta.env.VITE_CENSUS_KEY })
 const elections = createElectionsSource(electionData)
 createDataController(store, client, geo, FACTORS, elections)
 
-const panels = [createRankingPanel(), createDetailsPanel(), createComparePanel({ client })]
+const panels = [
+  createRankingPanel(),
+  createDetailsPanel({ client, years: YEARS }),
+  createComparePanel({ client })
+]
 const app = document.getElementById('app')
 const { mapSlot, searchSlot, yearSlot } = createShell(app, store, { factorList: FACTOR_LIST, panels })
 

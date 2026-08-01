@@ -35,12 +35,7 @@ export function createCensusClient({ key, year: defaultYear = 2023 } = {}) {
     })
   }
 
-  const fetchFactor = async ({ variable, variables, dataset, geoLevel, compute, year }) => {
-    const cols = variables ?? [variable]
-    const y = year ?? defaultYear
-    const cacheKey = `${y}|${dataset}|${cols.join(',')}|${geoLevel}`
-    if (cache.has(cacheKey)) return cache.get(cacheKey)
-
+  const request = async (cols, dataset, geoLevel, y, compute) => {
     const params = new URLSearchParams({ get: `NAME,${cols.join(',')}`, for: GEO[geoLevel] })
     if (key) params.set('key', key)
 
@@ -55,9 +50,22 @@ export function createCensusClient({ key, year: defaultYear = 2023 } = {}) {
     } catch {
       throw new Error(`Census API returned a non-JSON response for ${cols.join(',')} (check the API key)`)
     }
-    const rows = normalize(table, geoLevel, cols, compute)
-    cache.set(cacheKey, rows)
-    return rows
+    return normalize(table, geoLevel, cols, compute)
+  }
+
+  // The cache holds the in-flight promise, not just resolved rows, so concurrent identical
+  // requests (e.g. a sparkline hitting all 12 years while the map hovers) share one fetch.
+  // A rejected request is evicted so it can be retried rather than caching the failure.
+  const fetchFactor = ({ variable, variables, dataset, geoLevel, compute, year }) => {
+    const cols = variables ?? [variable]
+    const y = year ?? defaultYear
+    const cacheKey = `${y}|${dataset}|${cols.join(',')}|${geoLevel}`
+    if (cache.has(cacheKey)) return cache.get(cacheKey)
+
+    const promise = request(cols, dataset, geoLevel, y, compute)
+    promise.catch(() => cache.delete(cacheKey))
+    cache.set(cacheKey, promise)
+    return promise
   }
 
   return { fetchFactor }
