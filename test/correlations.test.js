@@ -11,8 +11,12 @@ const baseState = {
   }
 }
 
-// The mock returns a rising series for every factor, but a falling one for the profile
-// (poverty) dataset — so poverty correlates -1 with the current factor and the rest +1.
+// Scoping keeps only areas on screen; the mock geo puts three areas on screen.
+const geo = { featureIds: () => ['01', '02', '03'] }
+
+// The census mock returns a rising series for every factor, but a falling one for the
+// profile (poverty) dataset — so poverty correlates -1 with the current factor and the
+// rest +1.
 const rows = [{ id: '01', value: 1 }, { id: '02', value: 2 }, { id: '03', value: 3 }]
 const client = {
   fetchFactor: vi.fn((args) =>
@@ -22,10 +26,19 @@ const client = {
   )
 }
 
+// Bundled numeric layers: unemployment (BLS) falls, wages/life expectancy rise — so
+// unemployment runs opposite a rising census factor and the others run with it.
+const falling = [{ id: '01', value: 6 }, { id: '02', value: 5 }, { id: '03', value: 4 }]
+const sources = {
+  laus: { fetchFactor: vi.fn(() => Promise.resolve(falling)) },
+  wages: { fetchFactor: vi.fn(() => Promise.resolve(rows)) },
+  health: { fetchFactor: vi.fn(() => Promise.resolve(rows)) }
+}
+
 describe('createCorrelationsPanel', () => {
-  it('ranks other census factors by correlation with the current factor', async () => {
+  it('ranks other factors by correlation with the current census factor', async () => {
     const el = document.createElement('div')
-    createCorrelationsPanel({ client }).mount(el, createStore(baseState))
+    createCorrelationsPanel({ client, geo, sources }).mount(el, createStore(baseState))
     await vi.waitFor(() => expect(el.querySelector('.corr-row')).toBeTruthy())
 
     expect(el.querySelector('.corr-head').textContent).toContain('Median income')
@@ -38,10 +51,39 @@ describe('createCorrelationsPanel', () => {
     expect(names).not.toContain('Median income')
   })
 
-  it('prompts for a census factor when the current one is a bundled source', async () => {
+  it('includes the bundled numeric layers in the ranking', async () => {
     const el = document.createElement('div')
-    createCorrelationsPanel({ client }).mount(el, createStore({ ...baseState, factor: 'trifecta' }))
+    createCorrelationsPanel({ client, geo, sources }).mount(el, createStore(baseState))
+    await vi.waitFor(() => expect(el.querySelector('.corr-row')).toBeTruthy())
+
+    const names = [...el.querySelectorAll('.corr-name')].map((n) => n.textContent)
+    expect(names).toContain('Avg annual pay (BLS)')
+    expect(names).toContain('Unemployment rate (BLS)')
+    expect(names).toContain('Life expectancy (yrs)')
+    // BLS unemployment (falling) runs opposite the rising census base factor.
+    const unemp = [...el.querySelectorAll('.corr-row')].find((r) =>
+      r.querySelector('.corr-name').textContent === 'Unemployment rate (BLS)'
+    )
+    expect(unemp.querySelector('.corr-r').textContent).toBe('−1.00')
+  })
+
+  it('can use a bundled source as the base factor', async () => {
+    const el = document.createElement('div')
+    createCorrelationsPanel({ client, geo, sources })
+      .mount(el, createStore({ ...baseState, factor: 'laus_unemployment' }))
+    await vi.waitFor(() => expect(el.querySelector('.corr-row')).toBeTruthy())
+
+    expect(el.querySelector('.corr-head').textContent).toContain('Unemployment rate (BLS)')
+    const names = [...el.querySelectorAll('.corr-name')].map((n) => n.textContent)
+    expect(names).toContain('Median income') // census factors correlate against the layer
+    expect(names).not.toContain('Unemployment rate (BLS)') // never against itself
+  })
+
+  it('prompts for a numeric factor when the current one is categorical/diverging', async () => {
+    const el = document.createElement('div')
+    createCorrelationsPanel({ client, geo, sources })
+      .mount(el, createStore({ ...baseState, factor: 'trifecta' }))
     await vi.waitFor(() => expect(el.querySelector('.corr-empty')).toBeTruthy())
-    expect(el.querySelector('.corr-empty').textContent).toContain('Census factor')
+    expect(el.querySelector('.corr-empty').textContent).toContain('numeric factor')
   })
 })

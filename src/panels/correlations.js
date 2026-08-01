@@ -2,12 +2,16 @@ import { FACTOR_LIST, FACTORS } from '../data/factors.js'
 import { createCensusClient } from '../data/censusClient.js'
 import { pearson, describeCorrelation } from '../lib/stats.js'
 
-// "What correlates with this?" — for the current (census) factor, computes its Pearson r
-// against every other census factor over the areas on screen and ranks them by strength.
+// Only ramped numeric factors are correlatable, and they all are here: every Census
+// factor plus the numeric bundled data layers (BLS unemployment, BLS wages, life
+// expectancy). Diverging (elections) and categorical (trifecta) factors carry a `scale`
+// and are excluded — a Pearson r against a categorical or signed axis isn't meaningful.
+const correlatable = (f) => !!f && !f.scale
+
+// "What correlates with this?" — for the current factor, computes its Pearson r against
+// every other correlatable factor over the areas on screen and ranks them by strength.
 // Turns the map from "look at one variable" into "discover which variables move together".
-// Bundled sources (elections, trifecta, LAUS) are excluded: they aren't census-fetchable
-// here, and a categorical/diverging factor isn't a meaningful correlation axis.
-export function createCorrelationsPanel({ client = createCensusClient() } = {}) {
+export function createCorrelationsPanel({ client = createCensusClient(), geo, sources = {} } = {}) {
   let el = null
   let store = null
   let unsub = null
@@ -19,31 +23,48 @@ export function createCorrelationsPanel({ client = createCensusClient() } = {}) 
     return `${s.factor}|${s.geoLevel}|${s.selectedState}|${s.year}`
   }
 
-  const fetchArgs = (f, s) => ({
-    variable: f.variable, variables: f.variables, compute: f.compute,
-    dataset: f.dataset, geoLevel: s.geoLevel, year: s.year
-  })
+  // One fetch shape for either kind of factor: Census factors go through the client;
+  // bundled numeric layers go through their source (keyed by FIPS and year).
+  const fetchRows = (f, s) =>
+    f.source
+      ? sources[f.source].fetchFactor({
+          geoLevel: s.geoLevel, selectedState: s.selectedState, year: s.year
+        })
+      : client.fetchFactor({
+          variable: f.variable, variables: f.variables, compute: f.compute,
+          dataset: f.dataset, geoLevel: s.geoLevel, year: s.year
+        })
 
   const compute = async () => {
     const s = store.getState()
     const factorA = FACTORS[s.factor]
-    if (!factorA || factorA.source) {
+    if (!correlatable(factorA)) {
       el.innerHTML =
-        '<p class="corr-empty">Pick a Census factor to see what correlates with it ' +
-        'across the areas on screen.</p>'
+        '<p class="corr-empty">Pick a numeric factor (a Census measure, or a data ' +
+        'layer like unemployment, wages or life expectancy) to see what correlates ' +
+        'with it across the areas on screen.</p>'
       return
     }
     el.innerHTML = '<p class="corr-loading">Computing correlations…</p>'
     const my = ++reqId
 
-    const aRows = await client.fetchFactor(fetchArgs(factorA, s)).catch(() => [])
-    const aById = Object.fromEntries(aRows.map((r) => [r.id, r.value]))
-    const others = FACTOR_LIST.filter((f) => !f.source && f.id !== s.factor)
+    // Scope every factor to the features actually on screen (a state's counties when
+    // drilled in, otherwise the 50 states + DC), so the correlation reflects the current
+    // view rather than the whole nation. Census county requests return every US county.
+    const ids = geo ? new Set(geo.featureIds(s.geoLevel, s.selectedState)) : null
+    const scoped = (rows) => {
+      const m = {}
+      for (const r of rows) if (!ids || ids.has(r.id)) m[r.id] = r.value
+      return m
+    }
+
+    const aById = scoped(await fetchRows(factorA, s).catch(() => []))
+    const others = FACTOR_LIST.filter((f) => correlatable(f) && f.id !== s.factor)
     const results = await Promise.all(
       others.map(async (f) => {
-        const rows = await client.fetchFactor(fetchArgs(f, s)).catch(() => [])
-        const r = pearson(rows.map((row) => [aById[row.id], row.value]))
-        return { id: f.id, label: f.label, r }
+        const bById = scoped(await fetchRows(f, s).catch(() => []))
+        const pairs = Object.keys(aById).map((id) => [aById[id], bById[id]])
+        return { id: f.id, label: f.label, r: pearson(pairs) }
       })
     )
     if (my !== reqId) return // a newer factor/geo/year selection superseded this run

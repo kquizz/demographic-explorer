@@ -47,13 +47,14 @@ const trifectas = createTrifectasSource(trifectaData, geo)
 const laus = createFipsYearSource(lausData)
 const wages = createFipsYearSource(wageData)
 const health = createFipsYearSource(healthData)
-createDataController(store, client, geo, FACTORS, { elections, trifectas, laus, wages, health })
+const sources = { elections, trifectas, laus, wages, health }
+createDataController(store, client, geo, FACTORS, sources)
 
 const panels = [
   createRankingPanel(),
   createDetailsPanel({ client, years: YEARS }),
   createComparePanel({ client }),
-  createCorrelationsPanel({ client }),
+  createCorrelationsPanel({ client, geo, sources }),
   createTrifectaPanel({ client, trifectaData })
 ]
 const app = document.getElementById('app')
