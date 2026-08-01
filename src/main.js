@@ -1,10 +1,12 @@
 import us from 'us-atlas/counties-10m.json'
 import electionData from './data/elections.json'
+import trifectaData from './data/trifectas.json'
 import './shell/shell.css'
 import { createStore } from './store/store.js'
 import { createGeo } from './map/geo.js'
 import { createCensusClient } from './data/censusClient.js'
 import { createElectionsSource } from './data/electionsSource.js'
+import { createTrifectasSource } from './data/trifectasSource.js'
 import { createDataController } from './data/controller.js'
 import { createMap } from './map/map.js'
 import { createShell } from './shell/shell.js'
@@ -12,6 +14,7 @@ import { FACTOR_LIST, FACTORS } from './data/factors.js'
 import { createRankingPanel } from './panels/ranking.js'
 import { createDetailsPanel } from './panels/details.js'
 import { createComparePanel } from './panels/compare.js'
+import { createTrifectaPanel } from './panels/trifecta.js'
 import { mountSearch } from './search/search.js'
 import { mountErrorBanner } from './shell/error-banner.js'
 import { mountYearSlider } from './shell/year-slider.js'
@@ -34,12 +37,14 @@ const store = createStore({
 const geo = createGeo(us)
 const client = createCensusClient({ key: import.meta.env.VITE_CENSUS_KEY })
 const elections = createElectionsSource(electionData)
-createDataController(store, client, geo, FACTORS, elections)
+const trifectas = createTrifectasSource(trifectaData, geo)
+createDataController(store, client, geo, FACTORS, { elections, trifectas })
 
 const panels = [
   createRankingPanel(),
   createDetailsPanel({ client, years: YEARS }),
-  createComparePanel({ client })
+  createComparePanel({ client }),
+  createTrifectaPanel({ client, trifectaData })
 ]
 const app = document.getElementById('app')
 const { mapSlot, searchSlot, yearSlot } = createShell(app, store, { factorList: FACTOR_LIST, panels })

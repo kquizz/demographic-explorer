@@ -15,7 +15,7 @@ describe('FACTORS registry', () => {
   })
 
   it('gives every Census factor a dataset and a variable or computed variables', () => {
-    for (const f of FACTOR_LIST.filter((f) => f.source !== 'elections')) {
+    for (const f of FACTOR_LIST.filter((f) => !f.source)) {
       expect(['acs/acs5', 'acs/acs5/profile']).toContain(f.dataset)
       const single = typeof f.variable === 'string'
       const computed = Array.isArray(f.variables) && typeof f.compute === 'function'

@@ -1,4 +1,4 @@
-import { formatUsd, formatPercent, formatNumber, formatDecimal, formatGini, formatMargin } from '../lib/format.js'
+import { formatUsd, formatPercent, formatNumber, formatDecimal, formatGini, formatMargin, formatTrifecta } from '../lib/format.js'
 
 // Each factor maps to US Census ACS 5-year data, verified against the live API across
 // the full slider range (2012-2023). `dataset` is the API path segment after the year:
@@ -99,7 +99,12 @@ export const FACTOR_LIST = [
   // Elections — bundled dataset (not Census). Diverging red<->blue.
   // Margin uses the election-year picker (2020/2024); swing is a fixed 2020->2024 diff.
   { id: 'vote_margin', label: 'Presidential margin', source: 'elections', metric: 'margin', scale: 'diverging', format: formatMargin },
-  { id: 'vote_swing', label: 'Presidential swing (’20→’24)', source: 'elections', metric: 'swing', scale: 'diverging', format: formatMargin }
+  { id: 'vote_swing', label: 'Presidential swing (’20→’24)', source: 'elections', metric: 'swing', scale: 'diverging', format: formatMargin },
+
+  // State government trifectas — bundled dataset (not Census), keyed by the ACS year
+  // slider. Categorical (Republican / Divided / Democratic), so it uses its own three-
+  // color scale rather than a ramp. State-level; counties inherit their state's status.
+  { id: 'trifecta', label: 'State gov. trifecta', source: 'trifectas', scale: 'categorical', format: formatTrifecta }
 ]
 
 export const FACTORS = Object.fromEntries(FACTOR_LIST.map((f) => [f.id, f]))

@@ -22,7 +22,7 @@ describe('createDataController', () => {
     const census = { fetchFactor: vi.fn() }
     const elections = { fetchFactor: vi.fn(() => Promise.resolve([{ id: '01', name: 'Alabama', value: -50 }])) }
     const store = createStore({ ...initial, electionYear: 2024 })
-    createDataController(store, census, geoStub, factors, elections)
+    createDataController(store, census, geoStub, factors, { elections })
 
     store.setState({ factor: 'vote_margin' })
     await vi.waitFor(() => expect(store.getState().dataset.status).toBe('ready'))

@@ -5,9 +5,9 @@ import { sparkGeometry } from '../lib/sparkline.js'
 
 const SW = 220, SH = 46, SPAD = 7
 
-// A Census factor has a per-year value series; elections do not (they live in a separate
-// bundled source keyed to 2020/2024), so only Census factors get a sparkline.
-const isCensusFactor = (f) => !!f && f.source !== 'elections'
+// A Census factor has a per-year value series; bundled sources (elections, trifectas) do
+// not have a fetchable per-year census series, so only Census factors get a sparkline.
+const isCensusFactor = (f) => !!f && !f.source
 
 export function createDetailsPanel({ client = createCensusClient(), years = [] } = {}) {
   let el = null

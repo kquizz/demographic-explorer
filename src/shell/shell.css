@@ -48,6 +48,35 @@ body { margin: 0; }
 .map .biv-grid { display: grid; grid-template-columns: repeat(3, 16px); grid-template-rows: repeat(3, 16px); gap: 1px; }
 .map .biv-cell { width: 16px; height: 16px; }
 .map .biv-axis { font-size: 10px; color: #555; margin-top: 3px; }
+.map .categorical-legend .legend-title { margin-bottom: 4px; }
+.map .categorical-legend .cat-row { display: flex; align-items: center; gap: 6px; line-height: 1.6; }
+.map .categorical-legend .cat-swatch { display: inline-block; width: 12px; height: 12px;
+  border: 1px solid #cbd3e1; }
+
+/* trifecta gap panel */
+.trifecta-panel { font-size: 12px; }
+.tf-pick-row, .tf-weight-row { display: block; margin: 6px 0; color: #445; }
+.tf-pick { margin: 0 4px; }
+.tf-headline { margin: 8px 0 12px; line-height: 1.4; color: #223; }
+.tf-group { margin: 8px 0; }
+.tf-group-head { display: flex; align-items: center; gap: 6px; }
+.tf-group-head .tf-n { margin-left: auto; color: #889; }
+.tf-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.tf-bar-row { display: flex; align-items: center; gap: 8px; margin: 2px 0; }
+.tf-bar { height: 12px; border-radius: 2px; min-width: 2px; }
+.tf-center { font-variant-numeric: tabular-nums; font-weight: 600; }
+.tf-spread { font-size: 10px; color: #889; font-variant-numeric: tabular-nums; }
+.tf-R { background: #c1362f; }
+.tf-D { background: #2f5fc1; }
+.tf-divided { background: #b39ec4; }
+.tf-region { margin: 12px 0 4px; }
+.tf-region-title { font-size: 11px; color: #667; margin-bottom: 3px; }
+.tf-region-table { width: 100%; border-collapse: collapse; font-size: 11px;
+  font-variant-numeric: tabular-nums; }
+.tf-region-table th, .tf-region-table td { text-align: right; padding: 2px 4px;
+  border-bottom: 1px solid #eef1f6; }
+.tf-region-table th:first-child, .tf-region-table td:first-child { text-align: left; }
+.tf-caveat { font-size: 11px; color: #778; font-style: italic; line-height: 1.4; margin: 10px 0 0; }
 .map .biv-axis-a { transform: none; }
 .feature { stroke: #fff; stroke-width: 0.5; cursor: pointer; }
 .feature.pinned { stroke: #222; stroke-width: 1.5; }

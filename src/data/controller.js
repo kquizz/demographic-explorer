@@ -2,17 +2,19 @@ import { join } from './join.js'
 import { extent } from 'd3-array'
 import { signed } from '../lib/format.js'
 
-// `elections` is an optional second source (same fetchFactor shape) used by factors
-// tagged source: 'elections'; everything else goes through the census `client`.
-export function createDataController(store, client, geo, factors, elections = null) {
+// `sources` is a map of bundled non-census sources (same fetchFactor shape) keyed by the
+// factor's `source` tag, e.g. { elections, trifectas }; everything else goes through the
+// census `client`.
+export function createDataController(store, client, geo, factors, sources = {}) {
   let currentKey = null
 
   // Delta ("change over time") mode: a baseline year is set, differs from the current
-  // year, and the factor is a Census factor (elections have their own swing view).
+  // year, and the factor is a Census factor. Bundled sources (elections, trifectas) have
+  // their own time handling and never delta.
   const isDeltaMode = (factor, state) => {
     const f = factors[factor]
     return (
-      f.source !== 'elections' &&
+      !f.source &&
       state.baselineYear != null &&
       state.baselineYear !== state.year
     )
@@ -25,10 +27,12 @@ export function createDataController(store, client, geo, factors, elections = nu
 
   const fetchRows = (factor, state) => {
     const f = factors[factor]
-    if (f.source === 'elections') {
-      return elections.fetchFactor({
+    if (f.source) {
+      // Bundled sources share one arg bag and each reads only what it needs (elections
+      // uses electionYear/metric; trifectas uses year).
+      return sources[f.source].fetchFactor({
         geoLevel: state.geoLevel, selectedState: state.selectedState,
-        electionYear: state.electionYear, metric: f.metric
+        electionYear: state.electionYear, year: state.year, metric: f.metric
       })
     }
     return client.fetchFactor(censusArgs(f, state.geoLevel, state.year))

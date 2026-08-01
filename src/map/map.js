@@ -7,6 +7,12 @@ import { tercileThresholds, binOf, bivariateColor, BIVARIATE_PALETTE } from './b
 
 const NO_DATA_FILL = '#e8e8ea'
 
+// Categorical fill for trifecta-style factors: red / muted purple / blue for
+// Republican / Divided / Democratic. Purple reads as "mixed control".
+const CATEGORICAL_FILL = { R: '#c1362f', D: '#2f5fc1', divided: '#b39ec4' }
+const categoricalColor = (value) => CATEGORICAL_FILL[value] ?? NO_DATA_FILL
+const isCategorical = (state) => FACTORS[state.dataset.factor]?.scale === 'categorical'
+
 // The single-factor color scale: diverging red<->blue (centered at 0) for margin-style
 // factors, otherwise a sequential blues ramp over the value extent.
 const singleFactorScale = (state) => {
@@ -46,6 +52,15 @@ export function createMap(el, geo, store) {
   // the single-factor blues scale. `biv` is the "aBin bBin" tag, or null for no-data.
   const buildPaint = (state, features) => {
     const paint = {}
+    // Categorical factors (trifecta) have no numeric ramp or bivariate terciles; color
+    // each area straight from its category and skip compare/scale paths.
+    if (isCategorical(state)) {
+      for (const f of features) {
+        const fill = categoricalColor(state.dataset.values[String(f.id)])
+        paint[f.id] = { fill, biv: null }
+      }
+      return paint
+    }
     if (state.compare) {
       const aValues = state.dataset.values
       const bValues = state.compare.valuesById
@@ -98,8 +113,26 @@ export function createMap(el, geo, store) {
       .classed('pinned', (f) => String(f.id) === state.pinnedId)
 
     back.style('display', state.geoLevel === 'state' ? 'block' : 'none')
-    if (state.compare) renderBivariateLegend(state)
+    if (isCategorical(state)) renderCategoricalLegend(state)
+    else if (state.compare) renderBivariateLegend(state)
     else renderLegend(state)
+  }
+
+  const renderCategoricalLegend = (state) => {
+    const factor = FACTORS[state.dataset.factor]
+    legend.attr('class', 'legend categorical-legend').html('')
+    legend.append('div').attr('class', 'legend-title').text(factor?.label ?? '')
+    const rows = [
+      ['R', 'Republican trifecta'], ['divided', 'Divided'], ['D', 'Democratic trifecta']
+    ]
+    for (const [key, label] of rows) {
+      const row = legend.append('div').attr('class', 'cat-row')
+      row.append('span').attr('class', 'cat-swatch').style('background', CATEGORICAL_FILL[key])
+      row.append('span').text(label)
+    }
+    const nd = legend.append('div').attr('class', 'cat-row')
+    nd.append('span').attr('class', 'cat-swatch').style('background', NO_DATA_FILL)
+    nd.append('span').text('No data')
   }
 
   const renderLegend = (state) => {

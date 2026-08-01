@@ -27,3 +27,29 @@ export function describeCorrelation(r) {
   if (a < 0.05) return 'no correlation'
   return `${strength} ${r > 0 ? 'positive' : 'negative'}`
 }
+
+// Mean of the finite values in `xs`, or null if none.
+export function mean(xs) {
+  const v = xs.filter((x) => x != null && Number.isFinite(x))
+  return v.length ? v.reduce((s, x) => s + x, 0) / v.length : null
+}
+
+// Median of the finite values in `xs`, or null if none.
+export function median(xs) {
+  const v = xs.filter((x) => x != null && Number.isFinite(x)).sort((a, b) => a - b)
+  if (!v.length) return null
+  const mid = Math.floor(v.length / 2)
+  return v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2
+}
+
+// Weighted mean of [value, weight] pairs. Pairs with a null/NaN value or a non-positive
+// weight are dropped. Returns null when no usable weight remains.
+export function weightedMean(pairs) {
+  let sw = 0, swv = 0
+  for (const [value, weight] of pairs) {
+    if (value == null || !Number.isFinite(value) || !(weight > 0)) continue
+    sw += weight
+    swv += weight * value
+  }
+  return sw > 0 ? swv / sw : null
+}

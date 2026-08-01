@@ -96,4 +96,21 @@ describe('createMap', () => {
     expect(dem).not.toBe('#e8e8ea')
     expect(rep).not.toBe(dem)
   })
+
+  it('uses a categorical scale + legend for a categorical factor (trifecta)', () => {
+    const el = document.createElement('div')
+    const store = createStore({
+      ...baseState,
+      dataset: {
+        status: 'ready', factor: 'trifecta', geoLevel: 'nation',
+        rows: [], byId: {},
+        values: { '01': 'R', '02': 'D' }, extent: [null, null], error: null
+      }
+    })
+    createMap(el, createGeo(topology), store)
+    expect(el.querySelector('.categorical-legend')).toBeTruthy()
+    expect(el.querySelectorAll('.categorical-legend .cat-swatch').length).toBe(4)
+    expect(el.querySelector('path.feature[data-id="01"]').getAttribute('fill')).toBe('#c1362f')
+    expect(el.querySelector('path.feature[data-id="02"]').getAttribute('fill')).toBe('#2f5fc1')
+  })
 })
