@@ -40,6 +40,57 @@ describe('createMap', () => {
     expect(store.getState().hoveredId).toBe('01')
   })
 
+  it('shows a hover tooltip with the area name and value, and hides it on out', () => {
+    const el = document.createElement('div')
+    const store = createStore(baseState)
+    createMap(el, createGeo(topology), store)
+    const path = el.querySelector('path.feature[data-id="01"]')
+    path.dispatchEvent(new Event('pointerover', { bubbles: true }))
+    const tip = el.querySelector('.map-tooltip')
+    expect(tip.style.display).toBe('block')
+    expect(tip.textContent).toContain('Alabama')
+    expect(tip.textContent).toContain('$54,943')
+    path.dispatchEvent(new Event('pointerout', { bubbles: true }))
+    expect(tip.style.display).toBe('none')
+  })
+
+  it('tooltip shows both factor values in compare mode', () => {
+    const el = document.createElement('div')
+    const store = createStore({
+      ...baseState,
+      compare: { factor: 'population', valuesById: { '01': 5024279 } }
+    })
+    createMap(el, createGeo(topology), store)
+    el.querySelector('path.feature[data-id="01"]')
+      .dispatchEvent(new Event('pointerover', { bubbles: true }))
+    const tip = el.querySelector('.map-tooltip').textContent
+    expect(tip).toContain('Alabama')
+    expect(tip).toContain('Median income')
+    expect(tip).toContain('$54,943')
+    expect(tip).toContain('Population')
+    expect(tip).toContain('5,024,279')
+  })
+
+  it('anchors the sequential scale at zero when colorScaling is absolute', () => {
+    const el = document.createElement('div')
+    const store = createStore({
+      ...baseState, colorScaling: 'absolute',
+      dataset: {
+        status: 'ready', factor: 'median_income', geoLevel: 'nation', rows: [],
+        byId: { '01': { id: '01', name: 'Alabama', value: 54943 } },
+        values: { '01': 54943, '02': 80287 }, extent: [54943, 80287], error: null
+      }
+    })
+    createMap(el, createGeo(topology), store)
+    // Legend low end reads zero, not the data minimum.
+    expect(el.querySelector('.legend .lo').textContent).toBe('$0')
+    // The minimum-valued feature is no longer the palest shade (it would be under relative).
+    const fillAbsolute = el.querySelector('path.feature[data-id="01"]').getAttribute('fill')
+    store.setState({ colorScaling: 'relative' })
+    const fillRelative = el.querySelector('path.feature[data-id="01"]').getAttribute('fill')
+    expect(fillAbsolute).not.toBe(fillRelative)
+  })
+
   it('renders a legend with a no-data swatch', () => {
     const el = document.createElement('div')
     const store = createStore(baseState)

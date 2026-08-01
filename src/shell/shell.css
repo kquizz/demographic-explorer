@@ -18,6 +18,11 @@ body { margin: 0; }
 .election-year { background: #3a4a68; color: #cdd6e6; border: 1px solid #4a5a78; border-radius: 5px;
   padding: 3px 9px; cursor: pointer; }
 .election-year.on { background: #7aa2e3; color: #16233b; font-weight: 600; border-color: #7aa2e3; }
+.color-scale-wrap { margin-right: 12px; }
+.scale-toggle { font-size: 12px; color: #cdd6e6; display: inline-flex; align-items: center; gap: 5px; }
+.scale-mode { background: #3a4a68; color: #cdd6e6; border: 1px solid #4a5a78; border-radius: 5px;
+  padding: 3px 8px; cursor: pointer; }
+.scale-mode.on { background: #7aa2e3; color: #16233b; font-weight: 600; border-color: #7aa2e3; }
 .body-row { display: flex; flex: 1 1 auto; min-height: 0; }
 .appfooter { flex: 0 0 auto; background: #f4f6fa; border-top: 1px solid #dde;
   padding: 5px 12px; font-size: 11px; color: #667; display: flex; gap: 12px;
@@ -26,6 +31,14 @@ body { margin: 0; }
 .appfooter a:hover { text-decoration: underline; }
 .appfooter .footer-note { color: #99a; font-style: italic; }
 .rail { background: #eef1f6; padding: 10px; width: 180px; transition: width .2s; overflow: hidden; }
+/* Both rails are flex columns whose scrollable region (the factor list on the left, the
+   analysis panel on the right) scrolls independently, so a long list or table can never
+   run off the bottom under the footer with no way to reach it. */
+.rail-left { display: flex; flex-direction: column; }
+.rail-left .factor-list { flex: 1 1 auto; overflow-y: auto; min-height: 0; }
+.rail-right { width: 260px; display: flex; flex-direction: column; }
+.rail-right .panel-body { flex: 1 1 auto; overflow-y: auto; min-height: 0; }
+.rail-right.collapsed { width: 28px; }
 .rail.collapsed { width: 28px; padding: 10px 4px; }
 .rail.collapsed .rail-title, .rail.collapsed .factor-list,
 .rail.collapsed .tabs, .rail.collapsed .panel-body { display: none; }
@@ -38,6 +51,14 @@ body { margin: 0; }
 .tab.on { border-bottom: 2px solid #3b6cc4; font-weight: 600; }
 .map-slot { flex: 1; position: relative; background: linear-gradient(135deg, #dfe8dc, #cfe0d6); }
 .map .map-svg { width: 100%; height: 100%; }
+.map .map-tooltip { position: absolute; pointer-events: none; z-index: 5; max-width: 240px;
+  background: rgba(255, 255, 255, 0.97); border: 1px solid #cbd3e1; border-radius: 6px;
+  padding: 5px 8px; font-size: 12px; color: #333; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  line-height: 1.4; }
+.map .map-tooltip strong { display: block; margin-bottom: 2px; }
+.map .map-tooltip .tt-row { display: flex; justify-content: space-between; gap: 14px; }
+.map .map-tooltip .tt-label { color: #667; }
+.map .map-tooltip .tt-val { font-variant-numeric: tabular-nums; font-weight: 600; }
 .map .legend { position: absolute; left: 12px; bottom: 12px; background: #fff;
   border: 1px solid #cbd3e1; border-radius: 6px; padding: 6px 8px; font-size: 11px; }
 .map .legend .bar { display: inline-block; width: 90px; height: 8px; margin: 0 6px; vertical-align: middle; }
@@ -110,6 +131,9 @@ body { margin: 0; }
 .details-spark .spark-note { color: #99a; font-size: 11px; font-style: italic; margin: 4px 0 0; }
 .compare-pick { margin: 6px 0; width: 100%; }
 .compare-scatter { margin: 4px 0 10px; }
+.compare-scatter .scatter-label { font-size: 12px; min-height: 1.3em; margin-bottom: 3px; color: #333; }
+.compare-scatter .scatter-label .sl-name { font-weight: 600; }
+.compare-scatter .scatter-label .sl-hint { color: #99a; font-style: italic; }
 .compare-scatter .scatter-svg { width: 100%; height: auto; display: block; }
 .compare-scatter .frame { fill: none; stroke: #e2e6ee; }
 .compare-scatter .dot { fill: #4576b5; fill-opacity: 0.5; cursor: pointer; }

@@ -13,15 +13,24 @@ const CATEGORICAL_FILL = { R: '#c1362f', D: '#2f5fc1', divided: '#b39ec4' }
 const categoricalColor = (value) => CATEGORICAL_FILL[value] ?? NO_DATA_FILL
 const isCategorical = (state) => FACTORS[state.dataset.factor]?.scale === 'categorical'
 
+const isDiverging = (state) =>
+  state.dataset.diverging || FACTORS[state.dataset.factor]?.scale === 'diverging'
+
+// The low end of a sequential ramp: the data minimum ('relative'), or zero ('absolute')
+// so a shade's darkness tracks the real value instead of its rank in a narrow band.
+const sequentialLow = (state, min) =>
+  state.colorScaling === 'absolute' ? Math.min(0, min) : min
+
 // The single-factor color scale: diverging red<->blue (centered at 0) for margin-style
-// factors, otherwise a sequential blues ramp over the value extent.
+// factors, otherwise a sequential blues ramp over the value extent (or [0, max]).
 const singleFactorScale = (state) => {
   const [min, max] = state.dataset.extent
-  if (state.dataset.diverging || FACTORS[state.dataset.factor]?.scale === 'diverging') {
+  if (isDiverging(state)) {
     const m = Math.max(Math.abs(min ?? 0), Math.abs(max ?? 0)) || 1
     return scaleDiverging(interpolateRdBu).domain([-m, 0, m])
   }
-  return scaleSequential(interpolateBlues).domain(min == null ? [0, 1] : [min, max])
+  if (min == null) return scaleSequential(interpolateBlues).domain([0, 1])
+  return scaleSequential(interpolateBlues).domain([sequentialLow(state, min), max])
 }
 
 export function createMap(el, geo, store) {
@@ -35,6 +44,41 @@ export function createMap(el, geo, store) {
     .text('◀ Back to states')
     .style('display', 'none')
     .on('click', () => store.setState({ geoLevel: 'nation', selectedState: null, pinnedId: null }))
+
+  // Hover tooltip: the area name plus the actual value(s) for whatever is on the map —
+  // both factors in compare mode, the category in trifecta view, or the single value/delta
+  // otherwise. Follows the cursor and flips near the right/bottom edges so it never clips.
+  const tooltip = root.append('div').attr('class', 'map-tooltip').style('display', 'none')
+
+  const tooltipHtml = (state, id) => {
+    const name = state.dataset.byId[id]?.name ?? id
+    const line = (label, val, fmt) =>
+      `<span class="tt-row"><span class="tt-label">${label}</span>` +
+      `<span class="tt-val">${val == null ? 'No data' : fmt(val)}</span></span>`
+    if (state.compare) {
+      const aF = FACTORS[state.dataset.factor]
+      const bF = FACTORS[state.compare.factor]
+      return `<strong>${name}</strong>` +
+        line(aF?.label ?? '', state.dataset.values[id], aF?.format ?? String) +
+        line(bF?.label ?? '', state.compare.valuesById[id], bF?.format ?? String)
+    }
+    const fmt = state.dataset.format ?? FACTORS[state.dataset.factor]?.format ?? String
+    const label = state.dataset.label ?? FACTORS[state.dataset.factor]?.label ?? ''
+    return `<strong>${name}</strong>` + line(label, state.dataset.values[id], fmt)
+  }
+
+  const showTooltip = (event, f) => {
+    tooltip.html(tooltipHtml(store.getState(), String(f.id))).style('display', 'block')
+    const rect = el.getBoundingClientRect()
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+    const tw = tooltip.node().offsetWidth
+    const th = tooltip.node().offsetHeight
+    tooltip
+      .style('left', `${x + 14 + tw > rect.width ? x - 14 - tw : x + 14}px`)
+      .style('top', `${y + 14 + th > rect.height ? y - 14 - th : y + 14}px`)
+  }
+  const hideTooltip = () => tooltip.style('display', 'none')
 
   const projection = geoAlbersUsa()
   const path = geoPath(projection)
@@ -94,8 +138,15 @@ export function createMap(el, geo, store) {
       .append('path')
       .attr('class', 'feature')
       .attr('data-id', (f) => String(f.id))
-      .on('pointerover', (_e, f) => store.setState({ hoveredId: String(f.id) }))
-      .on('pointerout', () => store.setState({ hoveredId: null }))
+      .on('pointerover', (e, f) => {
+        store.setState({ hoveredId: String(f.id) })
+        showTooltip(e, f)
+      })
+      .on('pointermove', showTooltip)
+      .on('pointerout', () => {
+        store.setState({ hoveredId: null })
+        hideTooltip()
+      })
       .on('click', (_e, f) => {
         if (store.getState().geoLevel === 'nation') {
           store.setState({ geoLevel: 'state', selectedState: String(f.id), pinnedId: null })
@@ -145,10 +196,12 @@ export function createMap(el, geo, store) {
     legend.append('div').attr('class', 'legend-title').text(state.dataset.label ?? factor?.label ?? '')
     const ramp = legend.append('div').attr('class', 'ramp')
     if (min != null) {
-      ramp.append('span').attr('class', 'lo').text(fmt(min))
+      // In 'absolute' mode the ramp starts at zero, so the legend's low end says so too.
+      const lo = diverging ? min : sequentialLow(state, min)
+      ramp.append('span').attr('class', 'lo').text(fmt(lo))
       const gradient = diverging
         ? `linear-gradient(90deg, ${scale(min)}, ${scale(0)}, ${scale(max)})`
-        : `linear-gradient(90deg, ${scale(min)}, ${scale(max)})`
+        : `linear-gradient(90deg, ${scale(lo)}, ${scale(max)})`
       ramp.append('span').attr('class', 'bar').style('background', gradient)
       ramp.append('span').attr('class', 'hi').text(fmt(max))
     }

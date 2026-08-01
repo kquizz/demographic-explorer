@@ -108,4 +108,53 @@ describe('createComparePanel', () => {
     expect(hi.length).toBe(1)
     expect(hi[0].getAttribute('data-id')).toBe('02')
   })
+
+  it('names the hovered area (and its two values) in the scatter label', async () => {
+    const el = document.createElement('div')
+    const store = createStore(state)
+    const bRows = [
+      { id: '01', name: 'Alabama', value: 5024279 },
+      { id: '02', name: 'Alaska', value: 733391 }
+    ]
+    const client = { fetchFactor: vi.fn(() => Promise.resolve(bRows)) }
+    createComparePanel({ client }).mount(el, store)
+
+    const pick = el.querySelector('.compare-pick')
+    pick.value = 'population'
+    pick.dispatchEvent(new Event('change', { bubbles: true }))
+    await vi.waitFor(() => expect(el.querySelector('.compare-scatter circle.dot')).toBeTruthy())
+
+    expect(el.querySelector('.scatter-label').textContent).toContain('Hover') // hint before hover
+    store.setState({ hoveredId: '02' })
+    const label = el.querySelector('.scatter-label').textContent
+    expect(label).toContain('Alaska')
+    expect(label).toContain('$80,287')  // factor A value formatted
+    expect(label).toContain('733,391')  // factor B value formatted
+  })
+
+  it('pins a dot on click, and the pin outranks a hover in the label', async () => {
+    const el = document.createElement('div')
+    const store = createStore(state)
+    const bRows = [
+      { id: '01', name: 'Alabama', value: 5024279 },
+      { id: '02', name: 'Alaska', value: 733391 }
+    ]
+    const client = { fetchFactor: vi.fn(() => Promise.resolve(bRows)) }
+    createComparePanel({ client }).mount(el, store)
+
+    const pick = el.querySelector('.compare-pick')
+    pick.value = 'population'
+    pick.dispatchEvent(new Event('change', { bubbles: true }))
+    await vi.waitFor(() => expect(el.querySelector('.compare-scatter circle.dot')).toBeTruthy())
+
+    store.setState({ hoveredId: '02' }) // hovering Alaska
+    el.querySelector('.compare-scatter circle.dot[data-id="01"]')
+      .dispatchEvent(new MouseEvent('click', { bubbles: true }))
+
+    expect(store.getState().pinnedId).toBe('01')
+    expect(el.querySelector('.scatter-label').textContent).toContain('Alabama') // pin wins
+    const hi = el.querySelectorAll('.compare-scatter circle.dot.hi')
+    expect(hi.length).toBe(1)
+    expect(hi[0].getAttribute('data-id')).toBe('01')
+  })
 })

@@ -26,6 +26,8 @@ export function createShell(el, store, { factorList, panels }) {
         <a href="https://github.com/tonmcg/US_County_Level_Election_Results_08-24" target="_blank" rel="noopener">county presidential results compiled from official/AP returns</a>
         ·
         <a href="https://en.wikipedia.org/wiki/Government_trifecta" target="_blank" rel="noopener">state government trifectas compiled from Ballotpedia &amp; Wikipedia</a>
+        ·
+        <a href="https://www.bls.gov/lau/" target="_blank" rel="noopener">unemployment from the BLS Local Area Unemployment Statistics</a>
       </span>
       <span class="footer-note">Estimates carry margins of error; explore, don't over-read a single number.</span>
     </footer>

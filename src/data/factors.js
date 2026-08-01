@@ -30,9 +30,12 @@ export const FACTOR_LIST = [
   { id: 'per_capita_income', label: 'Per-capita income', variable: 'B19301_001E', dataset: 'acs/acs5', format: formatUsd },
   { id: 'poverty_rate', label: 'Poverty rate', variable: 'DP03_0128PE', dataset: 'acs/acs5/profile', format: formatPercent },
   {
-    id: 'unemployment_rate', label: 'Unemployment rate', dataset: 'acs/acs5', format: formatPercent,
+    id: 'unemployment_rate', label: 'Unemployment rate (ACS 5-yr)', dataset: 'acs/acs5', format: formatPercent,
     variables: ['B23025_005E', 'B23025_003E'], compute: ratioPct // unemployed / civilian labor force
   },
+  // BLS LAUS annual-average unemployment — a bundled source (not Census), the official
+  // labor measure. Sits beside the ACS estimate above so the two are easy to compare.
+  { id: 'laus_unemployment', label: 'Unemployment rate (BLS)', source: 'laus', format: formatPercent },
   {
     id: 'labor_force_participation', label: 'Labor force participation', dataset: 'acs/acs5',
     format: formatPercent,
