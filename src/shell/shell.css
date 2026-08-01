@@ -128,8 +128,8 @@ body { margin: 0; }
 .rank-row .name, .compare-row .name { flex: 1; }
 .rank-row .rank { color: #889; width: 22px; }
 .rank-row .value, .compare-row .a, .compare-row .b { font-variant-numeric: tabular-nums; }
-.rank-bar { position: absolute; left: 0; bottom: 0; height: 3px; background: #7aa2e3;
-  border-radius: 2px; opacity: 0.8; }
+.rank-bar { position: absolute; left: 0; bottom: 0; height: 4px; background: #7aa2e3;
+  border-radius: 2px; }
 .details h3 { margin: 6px 0; }
 .details .stat { display: flex; justify-content: space-between; gap: 8px; }
 .details-empty { color: #778; }
