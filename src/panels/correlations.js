@@ -27,9 +27,9 @@ export function createCorrelationsPanel({ client = createCensusClient(), geo, so
   // bundled numeric layers go through their source (keyed by FIPS and year).
   const fetchRows = (f, s) =>
     f.source
-      ? sources[f.source].fetchFactor({
+      ? (sources[f.source]?.fetchFactor({
           geoLevel: s.geoLevel, selectedState: s.selectedState, year: s.year
-        })
+        }) ?? Promise.resolve([]))
       : client.fetchFactor({
           variable: f.variable, variables: f.variables, compute: f.compute,
           dataset: f.dataset, geoLevel: s.geoLevel, year: s.year

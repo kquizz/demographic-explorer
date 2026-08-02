@@ -78,10 +78,10 @@ export function createExplorePanel({ client = createCensusClient(), geo, sources
   // One fetch shape for either kind of factor (census client or a bundled source).
   const fetchRows = (f, s) =>
     f.source
-      ? sources[f.source].fetchFactor({
+      ? (sources[f.source]?.fetchFactor({
           geoLevel: s.geoLevel, selectedState: s.selectedState,
           electionYear: s.electionYear, year: s.year, metric: f.metric
-        })
+        }) ?? Promise.resolve([]))
       : client.fetchFactor({
           variable: f.variable, variables: f.variables, compute: f.compute,
           dataset: f.dataset, geoLevel: s.geoLevel, year: s.year

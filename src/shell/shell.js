@@ -32,6 +32,8 @@ export function createShell(el, store, { factorList, panels }) {
         <a href="https://www.bls.gov/cew/" target="_blank" rel="noopener">wages from the BLS Quarterly Census of Employment and Wages</a>
         ·
         <a href="https://www.countyhealthrankings.org/" target="_blank" rel="noopener">life expectancy from County Health Rankings &amp; Roadmaps</a>
+        ·
+        <a href="https://www.bea.gov/data/prices-inflation/regional-price-parities-state-and-metro-area" target="_blank" rel="noopener">cost of living from BEA Regional Price Parities</a>
       </span>
       <span class="footer-note">Estimates carry margins of error; explore, don't over-read a single number.</span>
     </footer>

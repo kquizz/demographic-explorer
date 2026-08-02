@@ -46,6 +46,14 @@ export const FACTOR_LIST = [
     variables: ['B23025_002E', 'B23025_001E'], compute: ratioPct // in labor force / population 16+
   },
   { id: 'gini_index', label: 'Income inequality (Gini)', variable: 'B19083_001E', dataset: 'acs/acs5', format: formatGini },
+  // BEA Regional Price Parities — a cost-of-living index (US = 100), bundled sources (not
+  // Census), broken into components. State-level only (BEA doesn't publish per county), so
+  // these show no data when drilled into a state's counties.
+  { id: 'rpp_all', label: 'Cost of living (all)', source: 'rpp_all', format: formatDecimal },
+  { id: 'rpp_goods', label: 'Cost of living: goods', source: 'rpp_goods', format: formatDecimal },
+  { id: 'rpp_housing', label: 'Cost of living: housing', source: 'rpp_housing', format: formatDecimal },
+  { id: 'rpp_utilities', label: 'Cost of living: utilities', source: 'rpp_utilities', format: formatDecimal },
+  { id: 'rpp_services', label: 'Cost of living: services', source: 'rpp_services', format: formatDecimal },
   // County Health Rankings life expectancy — a bundled source (not Census). Great
   // correlation fodder against income, education and wages. Available 2019-2023; earlier
   // slider years show as no data.

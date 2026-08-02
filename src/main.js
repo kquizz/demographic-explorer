@@ -4,6 +4,7 @@ import trifectaData from './data/trifectas.json'
 import lausData from './data/laus.json'
 import wageData from './data/wages.json'
 import healthData from './data/health.json'
+import rppData from './data/rpp.json'
 import './shell/shell.css'
 import { createStore } from './store/store.js'
 import { createGeo } from './map/geo.js'
@@ -48,7 +49,14 @@ const trifectas = createTrifectasSource(trifectaData, geo)
 const laus = createFipsYearSource(lausData)
 const wages = createFipsYearSource(wageData)
 const health = createFipsYearSource(healthData)
-const sources = { elections, trifectas, laus, wages, health }
+const sources = {
+  elections, trifectas, laus, wages, health,
+  rpp_all: createFipsYearSource(rppData.all),
+  rpp_goods: createFipsYearSource(rppData.goods),
+  rpp_housing: createFipsYearSource(rppData.housing),
+  rpp_utilities: createFipsYearSource(rppData.utilities),
+  rpp_services: createFipsYearSource(rppData.services)
+}
 createDataController(store, client, geo, FACTORS, sources)
 
 const panels = [
