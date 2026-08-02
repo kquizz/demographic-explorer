@@ -4,6 +4,7 @@ import { extent } from 'd3-array'
 import { interpolateBlues, interpolateRdBu } from 'd3-scale-chromatic'
 import { FACTOR_LIST, FACTORS } from '../data/factors.js'
 import { createCensusClient } from '../data/censusClient.js'
+import { REGION_OF } from '../data/regions.js'
 import { pearson, linearRegression, mean } from '../lib/stats.js'
 
 // Small-multiples "Explore" panel. Pick one lens factor, then see every other numeric
@@ -35,8 +36,39 @@ export function createExplorePanel({ client = createCensusClient(), geo, sources
   let store = null
   let unsub = null
   let lens = 'trifecta'
+  let within = false
   let lastKey = null
   let reqId = 0
+
+  const regionOf = (id) => REGION_OF[id.length === 5 ? id.slice(0, 2) : id]
+
+  // Region-adjust: replace each requested axis with its deviation from the point's Census
+  // region mean, so the chart compares like-with-like (a Southern D state vs Southern R
+  // states, not vs the urban Northeast). Subtracting a constant per region leaves r and
+  // the slope untouched within a region while removing the between-region confound. The
+  // original lens value is preserved as `xRaw` so dots stay colored by the real value.
+  const demeanByRegion = (rows, axes) => {
+    const sums = {}
+    const counts = {}
+    for (const r of rows) {
+      const reg = regionOf(r.id)
+      for (const ax of axes) {
+        if (!Number.isFinite(r[ax])) continue
+        const k = `${reg}|${ax}`
+        sums[k] = (sums[k] ?? 0) + r[ax]
+        counts[k] = (counts[k] ?? 0) + 1
+      }
+    }
+    return rows.map((r) => {
+      const reg = regionOf(r.id)
+      const out = { ...r }
+      for (const ax of axes) {
+        const k = `${reg}|${ax}`
+        if (Number.isFinite(r[ax]) && counts[k]) out[ax] = r[ax] - sums[k] / counts[k]
+      }
+      return out
+    })
+  }
 
   const viewKey = () => {
     const s = store.getState()
@@ -94,10 +126,12 @@ export function createExplorePanel({ client = createCensusClient(), geo, sources
       others.map(async (f) => {
         const yById = scoped(await fetchRows(f, s).catch(() => []))
         const ids = Object.keys(lensById).filter((id) => yById[id]?.value != null)
-        const rows = ids.map((id) => ({
+        let rows = ids.map((id) => ({
           id, name: yById[id].name ?? lensById[id].name ?? id,
-          x: lensById[id].value, y: yById[id].value
+          x: lensById[id].value, xRaw: lensById[id].value, y: yById[id].value
         }))
+        // Grouped mode adjusts the factor (y) only; scatter adjusts both axes.
+        if (within) rows = demeanByRegion(rows, grouped ? ['y'] : ['x', 'y'])
         if (grouped) return groupedChart(f, rows)
         return scatterChart(f, rows)
       })
@@ -120,7 +154,7 @@ export function createExplorePanel({ client = createCensusClient(), geo, sources
     const reg = linearRegression(pts.map((p) => [p.x, p.y]))
     return {
       factor: f, mode: 'scatter', pts, reg, r, sortKey: Math.abs(r),
-      stat: `r = ${r >= 0 ? '+' : '−'}${Math.abs(r).toFixed(2)}`
+      stat: `r${within ? '*' : ''} = ${r >= 0 ? '+' : '−'}${Math.abs(r).toFixed(2)}`
     }
   }
 
@@ -143,7 +177,9 @@ export function createExplorePanel({ client = createCensusClient(), geo, sources
       factor: f, mode: 'grouped', pts, groups,
       means: { R: meanR, divided: mean(groups.divided), D: meanD },
       sortKey: gap == null ? -1 : Math.abs(gap) / spread,
-      stat: gap == null ? 'D−R: —' : `D−R: ${gap >= 0 ? '+' : '−'}${fmt(Math.abs(gap))}`
+      stat: gap == null
+        ? `D−R${within ? '*' : ''}: —`
+        : `D−R${within ? '*' : ''}: ${gap >= 0 ? '+' : '−'}${fmt(Math.abs(gap))}`
     }
   }
 
@@ -190,7 +226,7 @@ export function createExplorePanel({ client = createCensusClient(), geo, sources
     svg.selectAll('circle').data(c.pts).enter().append('circle')
       .attr('class', 'mini-dot').attr('r', 2.1)
       .attr('cx', (p) => x(p.x)).attr('cy', (p) => y(p.y))
-      .attr('fill', (p) => lensColor(p.x))
+      .attr('fill', (p) => lensColor(p.xRaw)) // color by the real lens value, not its region deviation
       .append('title').text((p) => p.name)
   }
 
@@ -227,14 +263,21 @@ export function createExplorePanel({ client = createCensusClient(), geo, sources
     el.innerHTML =
       `<div class="explore"><label class="lens-pick">Lens: ` +
       `<select class="lens-select">${opts}</select></label>` +
-      `<p class="explore-note">Each chart plots a factor against the lens, ` +
-      `strongest relationship first. Correlation isn’t causation — party lens tracks ` +
-      `urban/rural too.</p>` +
+      `<label class="within-row"><input type="checkbox" class="within-check"` +
+      `${within ? ' checked' : ''}> Within region <span class="within-hint">` +
+      `(compare like-with-like; * = region-adjusted)</span></label>` +
+      `<p class="explore-note">Each chart plots a factor against the lens, strongest ` +
+      `relationship first. Correlation isn’t causation — a raw party gap mostly reflects ` +
+      `that blue places are urban. Turn on <em>Within region</em> to strip that out.</p>` +
       `<div class="mini-grid"></div></div>`
     el.querySelector('.lens-select').addEventListener('change', (e) => {
       lens = e.target.value
       lastKey = viewKey()
       compute()
+    })
+    el.querySelector('.within-check').addEventListener('change', (e) => {
+      within = e.target.checked
+      compute() // pure re-derivation from cached fetches
     })
   }
 

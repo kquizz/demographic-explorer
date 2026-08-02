@@ -74,6 +74,19 @@ describe('createExplorePanel', () => {
     expect(el.querySelector('.mini-fit')).toBeTruthy()
   })
 
+  it('region-adjusts the stat when Within region is toggled on', async () => {
+    const el = mountPanel(baseState)
+    await vi.waitFor(() => expect(el.querySelector('.mini-chart')).toBeTruthy())
+    expect(el.querySelector('.mini-stat').textContent).not.toContain('*')
+
+    const check = el.querySelector('.within-check')
+    check.checked = true
+    check.dispatchEvent(new Event('change'))
+    await vi.waitFor(() => expect(el.querySelector('.mini-stat')?.textContent).toContain('*'))
+    // Still grouped party charts, now region-adjusted (D−R*).
+    expect(el.querySelector('.mini-stat').textContent).toContain('D−R*')
+  })
+
   it('never charts the lens against itself', async () => {
     const el = mountPanel(baseState)
     await vi.waitFor(() => expect(el.querySelector('.mini-chart')).toBeTruthy())
